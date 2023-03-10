@@ -1,0 +1,309 @@
+---
+title: "Montaje de los archivos de entrada al modelo SS3, formatos requeridos y aprovechamiento si fuera
+posible de los utilizados en las entradas de a4a."
+author: " "
+date: '`r format(Sys.Date(),"%B, %d, %Y")`'
+output: 
+  pdf_document:
+   toc: TRUE
+   number_sections: yes
+urlcolor: blue   
+---
+
+\newpage
+
+# Contexto
+
+Se pretende desarrollar un modelado con Stock Synthesis de los stocks de merluza europea (*Merluccius merluccius*) de la GSA1 (mar de Alborán) y GSA6 (Levante-Norte de España). Ambos stocks se encuentran definidos en el GFCM en el Mediterráneo español y llevan varios años siendo evaluados con metodología analítica SCAA utilizando el modelo **a4a**, con evaluaciones validadas y aprobadas en el GFCM en los últimos años. Se trabajaría con la serie histórica actualizada en el último WGSAD de diciembre de 2022 (2002-2021).
+
+Los dos objetivos principales  serían por un lado Intentar testar el paso de un modelo **SCAA** a uno integrado en el entorno **GFCM** con stocks españoles, algo hasta el momento inédito, y por otro lado presentar los resultados al próximo Simposio de Modelado y Evaluación de Recursos Pesqueros (SIMERPE II) que se celebrará en Cádiz desde el 24 al 27 de octubre de 2023.
+
+
+
+
+# Tareas a desarrollar.
+
+Dentro de la propuesta se han identificado las posibles tareas a desarrollar que serían por orden cronológico:
+
+ 1.	Montaje de los archivos de entrada al modelo SS3, formatos requeridos y aprovechamiento si fuera posible de los utilizados en las entradas de a4a.
+ 2.	Identificar tareas adicionales que requieran una recopilación de datos de entrada extra o con formatos diferentes a los usados en a4a.
+ 3.	Puesta a punto de ficheros de entrada SS3.
+ 4.	Primeras rodadas tentativas.
+ 5.	Análisis de resultados. Comparación con salidas XSA y a4a.
+ 6.	Presentación de los resultados en el SIMERPE II
+ 7.	Estudio de la viabilidad y/o idoneidad de estructurar la evaluación con estos stocks usando Stock Synthesis para los grupos de trabajo del GFCM el año que viene (WGSAD 2023).
+
+
+# Temporalización y dinámica de las actividades propuestas.
+
+El flujo de trabajo tendría tres fases bien definidas, una inicial en la cual de forma telemática se completarían los puntos 1, 2 y 3 de la propuesta. Se propone completar esta fase antes del 31 de marzo de 2023.
+
+En una segunda fase de desarrollo, se realizarían las primeras rodadas tentativas y se adquirirían las competencias necesarias para rodar el modelo de forma autónoma, al menos en sus requerimientos más básicos. Esta fase se realizaría en el C.O de Cádiz y Encarnación García y José Luis Pérez se desplazarían a este centro para tal fin para trabajar con María José Zúñiga bajo la supervisión de Margarita Rincón. Esta segunda fase tendría que estar completada el 30 de abril.
+
+En una última fase se analizarían telemáticamente los resultados obtenidos y la viabilidad e idoneidad del paso de a4a a Stock Synthesis para los dos stocks evaluados. Esta fase tendría dos fechas diferenciadas, una a final de mayo para confeccionar y enviar los resultados al SIMERPE II y otra en noviembre para dejar lista la evaluación de ambos stocks para su posible presentación en el WGSAD-GFCM en diciembre de 2023.
+
+
+# Análisis de datos de los stocks de merluza europea (*Merluccius merluccius*) de la GSA1 (mar de Alborán) y GSA6 (Levante-Norte de España).
+
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.align="center",fig.pos="h!")
+```
+
+
+
+```{r results='hide',include=FALSE}
+## Librerías requeridas
+ paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
+               "patchwork","dplyr","reshape","here")
+ lapply(paquetes, require, character.only = TRUE)
+```
+
+## Leer datos formato a4a
+
+El modelo SCAA a4a está implementado en FLR  (https://flr-project.org/doc/Loading_your_data_into_FLR.html
+, por lo tanto la arquitectura de sus ficheros imput sigue se estructura en torno a la clase FLStock con los siguientes slots:
+
+ - Catch
+ - catch.n
+ - catch.wt
+ - discards
+ - discards.n
+ - discards.wt
+ - landings
+ - landings.n
+ - landings.wt
+ - stock
+ - stock.n
+ - stock.wt
+ - m
+ - mat
+ - harvest
+ - harvest.spwn
+ - m.spwn
+
+No obstante, para facilitar la importación de los archivos imput, usamos ficheros con formato .DAT que mediante el archivo índice “LOWIND.DAT” y la sentencia “stk <- readFLStock("LOWIND.DAT")”, nos lee nuestros ficheros creándonos el objeto FLStock.
+
+A continuación describimos brevemente cada uno de los archivos .DAT que usamos como imputs:
+
+- CATCH: Capturas anuales del stock (En nuestro caso GSA correspondiente). Toneladas.
+- CATNUM: Matriz de número de individuos por edad/año de las capturas. (Miles de individuos).
+- CATWT: Peso medio por edad y año de tu matriz de captura. (Kilos).
+- STOCWT: medio por edad y año asumida para el stock (Normalmente = CATWT). (Kilos).
+- TUNEFF: Fichero con los índices de abundancia para calibrar (CPUEs o Campañas, o ambas). Normalmente para índices de campaña empleamos número/KM2.
+- NATMOR: Vector de mortalidad Natural por edad.
+- PROPMAT: Ogiva de madurez por edad.
+- PROPM:Factor de proporcionalidad de M antes de la puesta. Sería el slot m.spwn. Normalmente computamos 0.5 si la puesta es alrededor de Junio.
+- PROPF: Factor de proporcionalidad de F antes de la puesta. Sería el slot harvest.spwn. Normalmente computamos 0.5 si la puesta es alrededor de Junio.
+- LOWIND: Fichero índice.
+- INCHECK: Este no es un fichero imput propiamente dicho. Se trata del fichero resumen tras realizar el slicing con el programa L2age. Se recogen aquí el set de parámetros de crecimiento utilizados.
+
+\newpage
+
+### GSA1 (mar de Alborán)
+
+#### Modelo conceptual
+\quad
+La conceptualización del modelo biológico de **GSA1** considera los siguientes componentes de la dinámica poblacional:
+
+ - Estructura geográfica
+ - Reproducción
+ - Reclutamiento
+ - Mortalidad natural
+ - Crecimiento
+ - otros...
+
+
+#### Descripción del modelo
+\quad
+El modelo de evaluación de stock de **GSA1** se basa en un análisis estadístico de la dinámica de estructuras de edad anual que incorpora información biológica y pesquera. La información que ingresa al modelo consiste en ... 
+
+- Años de evaluación de stock = 2003_2021
+- número de edades = 6 años ?
+
+
+#### Archivos utilizado para enfoque de modelación `a4a`
+\quad
+```{r}
+dir_GSA1 <-  here("hke-GSA1-a4a_ format")
+dir(dir_GSA1)
+```
+
+
+
+#### Capturas anuales del stock (toneladas)
+\quad
+```{r}
+dir(dir_GSA1)[1]
+  CATCH.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[1],sep="/"),
+                          header=T,sep="",na="NA",fill=T,skip = 4)
+  CATCH.DAT
+  
+```
+
+#### índices de abundancia para calibrar (CPUEs o Campañas, o ambas). Normalmente para índices de campaña empleamos número/KM2.
+\quad
+```{r}
+dir(dir_GSA1)[12]
+  TUNEFF.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[12],sep="/"),
+                           sep="",na="NA",fill=T,skip = 6)
+  TUNEFF.DAT
+  
+```
+
+#### Matriz de número de individuos por edad/año de las capturas (Miles de individuos)
+\quad
+```{r}
+dir(dir_GSA1)[2]
+  CATNUM.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[2],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  CATNUM.DAT 
+  
+```
+
+
+
+#### Peso medio por edad y año de tu matriz de captura (Kilos).
+\quad
+```{r}
+dir(dir_GSA1)[3]
+  CATWT.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[3],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  CATWT.DAT 
+  
+```
+
+#### Medio por edad y año asumida para el stock (Normalmente = CATWT) (Kilos).
+\quad
+```{r}
+dir(dir_GSA1)[11]
+  STOCWT.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[11],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  STOCWT.DAT
+  
+```
+
+#### Vector de mortalidad Natural por edad.
+\quad
+```{r}
+dir(dir_GSA1)[7]
+  NATMOR.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[7],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  NATMOR.DAT
+  
+```
+
+#### Ogiva de madurez por edad.
+\quad
+```{r}
+dir(dir_GSA1)[10]
+  PROPMAT.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[10],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  PROPMAT.DAT
+  
+```
+
+
+\newpage
+
+### GSA6 (Levante-Norte de España).
+
+\quad
+La conceptualización del modelo biológico de **GSA6** considera los siguientes componentes de la dinámica poblacional:
+
+ - Estructura geográfica
+ - Reproducción
+ - Reclutamiento
+ - Mortalidad natural
+ - Crecimiento
+ - otros...
+
+
+#### Descripción del modelo
+\quad
+El modelo de evaluación de stock de **GSA6** se basa en un análisis estadístico de la dinámica de estructuras de edad anual que incorpora información biológica y pesquera. La información que ingresa al modelo consiste en ... 
+
+- Años de evaluación de stock = 2002_2021
+- número de edades = 6 años ?
+
+
+#### Archivos utilizado para enfoque de modelación `a4a`
+\quad
+```{r}
+
+dir_GSA6 <-  here("hke_GSA6_a4a_format")
+dir(dir_GSA6)
+
+```
+
+#### Capturas anuales del stock (toneladas)
+\quad
+```{r}
+dir(dir_GSA6)[1]
+  CATCH.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[1],sep="/"),
+                          header=T,sep="",na="NA",fill=T,skip = 4)
+  CATCH.DAT
+  
+```
+
+#### índices de abundancia para calibrar (CPUEs o Campañas, o ambas). Normalmente para índices de campaña empleamos número/KM2.
+\quad
+```{r}
+dir(dir_GSA6)[12]
+  TUNEFF.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[12],sep="/"),
+                           sep="",na="NA",fill=T,skip = 6)
+  TUNEFF.DAT
+  
+```
+
+#### Matriz de número de individuos por edad/año de las capturas (Miles de individuos)
+\quad
+```{r}
+dir(dir_GSA6)[2]
+  CATNUM.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[2],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  CATNUM.DAT 
+  
+```
+
+
+
+#### Peso medio por edad y año de tu matriz de captura (Kilos).
+\quad
+```{r}
+dir(dir_GSA6)[3]
+  CATWT.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[3],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  CATWT.DAT 
+  
+```
+
+#### Medio por edad y año asumida para el stock (Normalmente = CATWT) (Kilos).
+\quad
+```{r}
+dir(dir_GSA6)[11]
+  STOCWT.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[11],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  STOCWT.DAT
+  
+```
+
+#### Vector de mortalidad Natural por edad.
+\quad
+```{r}
+dir(dir_GSA6)[7]
+  NATMOR.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[7],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  NATMOR.DAT
+  
+```
+
+#### Ogiva de madurez por edad.
+\quad
+```{r}
+dir(dir_GSA6)[10]
+  PROPMAT.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[10],sep="/"),
+                           sep="",na="NA",fill=T,skip = 5)
+  PROPMAT.DAT
+  
+```

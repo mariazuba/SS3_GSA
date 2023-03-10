@@ -1,0 +1,10 @@
+hake_2021											
+ Smallest length   4.0
+ No ages requested  5
+ CURVE  110.0  .178  .000
+      1  17.9
+      2  32.9
+      3  45.5
+      4  56.0
+      5  64.8
+ PLUS GROUP   6
