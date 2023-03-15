@@ -1,0 +1,97 @@
+---
+title: "Formato Archivo  starter.ss"
+author: " "
+date: '`r format(Sys.Date(),"%B, %d, %Y")`'
+output: 
+  pdf_document:
+   toc: TRUE
+   number_sections: yes
+urlcolor: blue   
+---
+
+
+\newpage
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.align="center",fig.pos="h!")
+```
+
+
+
+```{r results='hide',include=FALSE}
+## Librerías requeridas
+ paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
+               "patchwork","dplyr","reshape","here","r4ss")
+ lapply(paquetes, require, character.only = TRUE)
+```
+
+# Contexto
+
+## Identificamos los directorio de trabajo
+```{r}
+dirname.base <- here("simple")
+dirname.simple_base <- here("simple_base")
+dirname.simple_mod <- here("simple_modificado")
+```
+
+## Leer los archivos de Stock Synthesis  con la función `SS_read()`
+
+```{r}
+inputs <- r4ss::SS_read(dir = dirname.simple_mod)
+```
+
+## Investigar el modelo 
+
+ Cada uno de los archivos de entrada se lee en R como una lista. 
+ 
+ Use `names()` para ver todos los componentes de la lista
+
+
+## Revisamos los elementos de la lista
+```{r}
+names(inputs) 
+```
+
+
+## Revisamos los nombres de los componentes de la lista del archivo starter
+```{r}
+names(inputs$start) 
+```
+
+```{r}
+inputs$start[1]
+inputs$start[2]
+inputs$start[3]
+inputs$start[4]
+inputs$start[5]
+inputs$start[6]
+inputs$start[7]
+inputs$start[8]
+inputs$start[9]
+inputs$start[10]
+inputs$start[11]
+inputs$start[12]
+inputs$start[13]
+inputs$start[14]
+inputs$start[15]
+inputs$start[16]
+inputs$start[17]
+inputs$start[18]
+inputs$start[19]
+inputs$start[20]
+inputs$start[21]
+inputs$start[22]
+inputs$start[23]
+inputs$start[24]
+inputs$start[25]
+inputs$start[26]
+inputs$start[27]
+inputs$start[28]
+inputs$start[29]
+inputs$start[30]
+inputs$start[31]
+inputs$start[32]
+inputs$start[33]
+inputs$start[34]
+
+```
+
