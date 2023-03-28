@@ -1,0 +1,428 @@
+---
+title: "Formato  Archivo  Data.ss"
+author: " "
+date: '`r format(Sys.Date(),"%B, %d, %Y")`'
+output: 
+  pdf_document:
+   toc: TRUE
+   number_sections: yes
+urlcolor: blue   
+---
+
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.align="center",fig.pos="h!")
+```
+
+
+
+```{r results='hide',include=FALSE}
+## Librerías requeridas
+ paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
+               "patchwork","dplyr","reshape","here","r4ss")
+ lapply(paquetes, require, character.only = TRUE)
+```
+
+### Identificar formato de entrada de datos SS3
+
+1. Identificamos el directorio donde se encuentra el modelo base simple
+```{r}
+dirname.base <- here("simple")
+```
+
+
+2. Creamos un nuevo directorio  donde se encuentra el modelo base simple (para este ejercicio)
+```{r}
+dirname.simple_base <- here("simple_base")
+dir.create(path=dirname.simple_base, showWarnings = TRUE, recursive = TRUE)
+```
+
+3. Creamos un nuevo directorio para la nueva versión del modelo modificado 
+```{r}
+dirname.simple_mod <- here("simple_modificado")
+dir.create(path=dirname.simple_mod, showWarnings = TRUE, recursive = TRUE)
+```
+
+4. Copiamos los archivos del modelo base
+```{r}
+copy_SS_inputs(dir.old = dirname.base, 
+               dir.new = dirname.simple_base,
+               copy_exe = TRUE,
+               verbose = FALSE)
+```
+
+5. Copiamos los archivos para el modelo que vamos a  modificar
+```{r}
+copy_SS_inputs(dir.old = dirname.base, 
+               dir.new = dirname.simple_mod,
+               copy_exe = TRUE,
+               verbose = FALSE)
+```
+
+5. Leer los archivos de Stock Synthesis  con la función `SS_read()`
+
+```{r}
+inputs <- r4ss::SS_read(dir = dirname.simple_mod)
+```
+6. Investigar el modelo 
+
+ Cada uno de los archivos de entrada se lee en R como una lista. 
+ 
+ Use `names()` para ver todos los componentes de la lista
+
+
+Revisamos los elementos de la lista
+```{r}
+names(inputs) 
+
+```
+
+Revisamos los nombres de los componentes de la lista del archivo .dat
+```{r}
+
+dat <- r4ss::SS_readdat(here(dirname.simple_mod,"data.ss")) #base
+dat1<-dat # para modificar
+names(dat1) 
+
+
+```
+
+\newpage
+
+0. Especificaciones iniciales
+
+
+```{r}
+dat$styr 
+dat$endyr 
+dat$nseas
+dat$months_per_seas
+dat$Nsubseasons 
+dat$spawn_month
+dat$Ngenders
+dat$Nsexes
+dat$Nages
+dat$N_areas
+dat$Nfleets
+
+dat1$styr           <-1971  #numeric
+dat1$endyr          <-2001  #numeric
+dat1$nseas          <-1     #numeric
+dat1$months_per_seas<-12    #numeric
+dat1$Nsubseasons    <-2     #numeric
+dat1$spawn_month    <-1     #numeric
+dat1$Ngenders       <-2     #numeric
+dat1$Nsexes         <-2     #numeric
+dat1$Nages          <-40    #numeric
+dat1$N_areas        <-1     #numeric
+dat1$Nfleets        <-3     #numeric
+```
+
+
+1. Sobre los datos de captura
+
+Primero ingresamos las especificaciones de los Datos de captura de la flota
+```{r}
+# Datos de modelo simple
+dat$fleetnames
+dat$surveytiming
+dat$units_of_catch
+dat$areas 
+
+dat$fleetinfo
+
+# Modificar con los datos propios
+dat1$fleetnames    <-c("FISHERY", "SURVEY1", "SURVEY2")     #character vector
+dat1$surveytiming  <-c(-1,1,1)#numeric vector
+dat1$units_of_catch<-c(1,2,2) #numeric vector
+dat1$areas         <-c(1,1,1) #numeric vector
+
+# crear data.frame para fleetinfo
+fleetinfo1<-data.frame(type = c(1,3,3),
+                       surveytiming =c(-1,1,1),
+                       area=c(1,1,1),
+                       units=c(1,2,2),
+                       need_catch_mult =c(0,0,0),
+                       fleetname=c("FISHERY", "SURVEY1", "SURVEY2") )
+
+dat1$fleetinfo     <- fleetinfo1      #data.frame
+
+```
+
+Luego ingresamos los datos de captura de la flota
+```{r}
+# Datos de modelo simple
+dat$catch
+# Modificar con los datos propios
+catch1<-data.frame(year=dat$catch$year,
+                   seas=dat$catch$seas,
+                   fleet=dat$catch$fleet,
+                   catch=dat$catch$catch,
+                   catch_se=dat$catch$catch_se)
+dat1$catch<-catch1 # data.frame
+
+```
+
+
+
+2. Índices de abundancia
+
+
+Especificaciones de los índices de abundancia
+```{r}
+# Datos de modelo simple
+dat$CPUEinfo
+# Modificar con los datos propios
+CPUEinfo1<-data.frame(Fleet=dat$CPUEinfo$Fleet,
+                      Units=dat$CPUEinfo$Units,
+                      Errtype=dat$CPUEinfo$Errtype,
+                      SD_Report=dat$CPUEinfo$SD_Report)
+row.names(CPUEinfo1)<-c("FISHERY", "SURVEY1", "SURVEY2")
+
+dat1$CPUEinfo<-dat$CPUEinfo # data.frame
+```
+
+Datos índices de abundancia
+```{r}
+# Datos de modelo simple
+names(dat$CPUE)
+
+# Modificar con los datos propios
+CPUE1<-data.frame(year=dat$CPUE$year,
+                  seas=dat$CPUE$seas,
+                  index=dat$CPUE$index,
+                  obs=dat$CPUE$obs,
+                  se_log=dat$CPUE$se_log)
+
+dat1$CPUE<-CPUE1 # data.frame
+```
+
+Datos de descarte y tallas medias
+```{r}
+# datos de modelo simple
+dat$N_discard_fleets
+dat$use_meanbodywt
+
+# Modificar con los datos propios
+dat1$N_discard_fleets <-0 #numeric
+dat1$use_meanbodywt   <-0 #numeric
+```
+
+Especificación de los Datos composición de tallas
+```{r}
+# datos de modelo simple
+dat$lbin_method
+dat$binwidth
+dat$minimum_size
+dat$maximum_size
+dat$use_lencomp
+
+# Modificar con los datos propios
+dat1$lbin_method  <-2 #numeric
+dat1$binwidth     <-2  #numeric
+dat1$minimum_size <-10 #numeric
+dat1$maximum_size <-94 #numeric
+dat1$use_lencompz <-1   #numeric
+```
+
+Datos de composición de tallas
+```{r}
+# datos de modelo simple
+names(dat$len_info)
+
+# Modificar con los datos propios
+len_info1 <- data.frame(mintailcomp=dat$len_info$mintailcomp,
+                        addtocomp=dat$len_info$addtocomp,
+                        combine_M_F=dat$len_info$combine_M_F,
+                        CompressBins=dat$len_info$CompressBins,
+                        CompError=dat$len_info$CompError,
+                        ParmSelect=dat$len_info$ParmSelect,
+                        minsamplesize=dat$len_info$minsamplesize)
+
+row.names(len_info1)<-c("FISHERY", "SURVEY1", "SURVEY2")
+
+dat1$len_info   <- len_info1 #data.frame
+
+```
+
+
+Especificación del vector de tallas
+```{r}
+# datos de modelo simple
+dat$N_lbins
+dat$lbin_vector
+
+# Modificar con los datos propios
+dat1$N_lbins     <-25  #numeric
+dat1$lbin_vector <-c(seq(26,64,2),seq(68,80,4),90) #numeric vector
+
+```
+
+
+Datos de composición de tallas
+```{r}
+# datos de modelo simple
+dat$lencomp
+
+# Modificar con los datos propios
+new_lencomp_flt_1 <- data.frame(Yr = 2002:2021, 
+                                Seas = 7, 
+                                FltSvy = -1, 
+                                Gender = 3, 
+                                Part = 0, 
+                                Nsamp = 125)
+
+new_lencomp_flt_2 <- data.frame(Yr = seq(2002, 2021, by = 3), 
+                                Seas = 7, 
+                                FltSvy = -2, 
+                                Gender = 3, 
+                                Part = 0, 
+                                Nsamp = 125)
+
+dat_rows_names <- colnames(dat$lencomp)[-(1:6)]
+dat_rows <- as.data.frame(matrix(data = 1, nrow = nrow(new_lencomp_flt_1)+nrow(new_lencomp_flt_2), 
+                   ncol = length(dat_rows_names)))
+names(dat_rows) <- dat_rows_names 
+
+
+new_lencomp <- rbind(new_lencomp_flt_1, new_lencomp_flt_2)
+new_lencomp <- cbind(new_lencomp, dat_rows)
+
+dat1$lencomp <- rbind(dat$lencomp, new_lencomp) #data.frame
+```
+
+
+Datos de error edad
+```{r}
+# datos de modelo simple
+dat$ageerror
+
+# Modificar con los datos propios
+dat1$ageerror <- dat$ageerror #data.frame
+```
+
+Especificaciones de los datos de composicion de edad
+```{r}
+# datos de modelo simple
+dat$age_info
+
+# Modificar con los datos propios
+age_info1<-data.frame(mintailcomp=dat$age_info$mintailcomp,
+                      addtocomp=dat$age_info$addtocomp,
+                      combine_M_F=dat$age_info$combine_M_F,
+                      CompressBins=dat$age_info$CompressBins,
+                      CompError=dat$age_info$CompError,
+                      ParmSelect=dat$age_info$ParmSelect,
+                      minsamplesize=dat$age_info$minsamplesize)
+
+row.names(age_info1)<-c("FISHERY", "SURVEY1", "SURVEY2")
+
+dat1$age_info <- age_info1 #data.frame
+```
+
+Datos de composicion de edad
+```{r}
+# datos de modelo simple
+dat$agecomp
+
+# Modificar con los datos propios
+new_agecomp_flt_1 <- data.frame(Yr=2002:2021, 
+                                Seas=7, 
+                                FltSvy=-1, 
+                                Gender=3, 
+                                Part=0,  
+                                Ageerr=2, 
+                                Lbin_lo=-1, 
+                                Lbin_hi=-1, 
+                                Nsamp=75)
+
+new_agecomp_flt_2 <- data.frame(Yr=seq(2002, 2021, by = 3), 
+                                Seas=7, 
+                                FltSvy=-2, 
+                                Gender=3, 
+                                Part=0, 
+                                Ageerr=2,
+                                Lbin_lo=-1, 
+                                Lbin_hi=-1, 
+                                Nsamp=75)
+
+dat_rows_names <- colnames(dat$agecomp)[-(1:9)]
+
+dat_rows <- as.data.frame(matrix(data = 1, nrow = nrow(new_agecomp_flt_1)+nrow(new_agecomp_flt_2), 
+                                 ncol = length(dat_rows_names)))
+
+names(dat_rows) <- dat_rows_names 
+
+new_agecomp  <- rbind(new_agecomp_flt_1, new_agecomp_flt_2)
+new_agecomp  <- cbind(new_agecomp, dat_rows)
+dat1$agecomp <- rbind(dat$agecomp, new_agecomp) #data.frame
+``` 
+
+
+Otros datos
+```{r}
+# datos de modelo simple
+dat$use_MeanSize_at_Age_obs
+dat$MeanSize_at_Age_obs
+
+# Modificar con los datos propios
+dat1$use_MeanSize_at_Age_obs <- 1 #numeric
+
+MeanSize_at_Age_obs_esp<-data.frame(Yr=dat$MeanSize_at_Age_obs$Yr,
+                                    Seas=dat$MeanSize_at_Age_obs$Seas,
+                                    FltSvy=dat$MeanSize_at_Age_obs$FltSvy,
+                                    Gender=dat$MeanSize_at_Age_obs$Gender,
+                                    Part=dat$MeanSize_at_Age_obs$Part,
+                                    AgeErr=dat$MeanSize_at_Age_obs$AgeErr,
+                                    Ignore=dat$MeanSize_at_Age_obs$Ignore)
+
+MeanSize_at_Age_obs_f   <-dat$MeanSize_at_Age_obs[,8:24]
+MeanSize_at_Age_obs_m   <-dat$MeanSize_at_Age_obs[,25:41]
+MeanSize_at_Age_obs_N_f <-dat$MeanSize_at_Age_obs[,42:58]
+
+dat_rows_names <-c(colnames(MeanSize_at_Age_obs_esp),colnames(dat$MeanSize_at_Age_obs[1,8:58]))
+
+MeanSize_at_Age_obs1 <-cbind(MeanSize_at_Age_obs_esp,
+                              MeanSize_at_Age_obs_f,
+                              MeanSize_at_Age_obs_m,
+                              MeanSize_at_Age_obs_N_f)
+
+names(MeanSize_at_Age_obs1) <-dat_rows_names 
+
+dat1$MeanSize_at_Age_obs<-MeanSize_at_Age_obs1 #data.frame
+```
+
+```{r}
+# datos de modelo simple
+dat$N_environ_variables
+dat$N_sizefreq_methods
+dat$do_tags
+dat$morphcomp_data
+dat$use_selectivity_priors
+dat$eof
+
+# Modificar con los datos propios
+dat1$N_environ_variables    <-0 #numeric
+dat1$N_sizefreq_methods     <-0 #numeric
+dat1$do_tags                <-0 #numeric
+dat1$morphcomp_data         <-0 #numeric
+dat1$use_selectivity_priors <-0 #numeric
+dat1$eof                    <-TRUE #logical
+```
+
+\newpage
+# Escribir archivo dat modificado con la función  `SS_write`
+```{r}
+r4ss::SS_writedat(dat1,outfile=here(dirname.simple_mod,"data.ss"),overwrite = TRUE)
+```
+
+# comprobar si el modelo corre al modificar este archivo
+```{r eval=F}
+exe_path <- here("Ejecutables_SS3","3.30.18_release")
+ss_exe_mac <- paste(exe_path,"ss_osx",sep= "/")
+
+r4ss::run_SS_models(dirvec = dirname.simple_mod,model=ss_exe_mac,
+                    skipfinished=FALSE)
+```
+
+\newpage

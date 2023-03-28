@@ -1,0 +1,521 @@
+---
+title: "Formato Archivo Control.ss"
+author: " "
+date: '`r format(Sys.Date(),"%B, %d, %Y")`'
+output: 
+  pdf_document:
+   toc: TRUE
+   number_sections: yes
+urlcolor: blue   
+---
+
+\newpage
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.align="center",fig.pos="h!")
+```
+
+
+
+```{r results='hide',include=FALSE}
+## Librerías requeridas
+ paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
+               "patchwork","dplyr","reshape","here","r4ss")
+ lapply(paquetes, require, character.only = TRUE)
+```
+
+# Contexto
+
+## Identificamos los directorio de trabajo
+```{r}
+dirname.base <- here("simple")
+dirname.simple_base <- here("simple_base")
+dirname.simple_mod <- here("simple_modificado")
+```
+
+## Leer los archivos de Stock Synthesis  con la función `SS_read()`
+
+```{r}
+inputs <- r4ss::SS_read(dir = dirname.simple_mod)
+```
+
+## Investigar el modelo 
+
+ Cada uno de los archivos de entrada se lee en R como una lista. 
+ 
+ Use `names()` para ver todos los componentes de la lista
+
+
+## Revisamos los elementos de la lista
+```{r}
+names(inputs) 
+```
+
+## Revisamos los nombres de los componentes de la lista del archivo control
+```{r}
+names(inputs$ctl) 
+```
+
+\newpage
+##  Especificaciones iniciales
+```{r}
+#inputs$ctl[3]
+inputs$ctl$nseas
+
+#inputs$ctl[4]
+inputs$ctl$N_areas
+
+#inputs$ctl[5]
+inputs$ctl$Nages
+
+#inputs$ctl[6]
+inputs$ctl$Nsexes
+
+#inputs$ctl[7]
+inputs$ctl$Npopbins
+
+#inputs$ctl[8]
+inputs$ctl$Nfleets
+
+#inputs$ctl[9]
+inputs$ctl$Do_AgeKey
+
+```
+
+
+## Datos de los archivos
+```{r}
+#inputs$ctl[10]
+inputs$ctl$fleetnames
+
+#inputs$ctl[11]
+inputs$ctl$sourcefile
+
+#inputs$ctl[12]
+inputs$ctl$type
+
+#inputs$ctl[13]
+inputs$ctl$ReadVersion
+
+#inputs$ctl[14]
+inputs$ctl$eof
+```
+
+## especificaciones del crecimiento para REVISAR!!
+```{r}
+#inputs$ctl[15]
+inputs$ctl$EmpiricalWAA
+
+#inputs$ctl[16]
+inputs$ctl$N_GP
+
+#inputs$ctl[17]
+inputs$ctl$N_platoon
+```
+
+## Distribución del reclutamiento
+```{r}
+#inputs$ctl[18]
+inputs$ctl$recr_dist_method
+
+#inputs$ctl[19]
+inputs$ctl$recr_global_area
+
+#inputs$ctl[20]
+inputs$ctl$recr_dist_read
+
+#inputs$ctl[21]
+inputs$ctl$recr_dist_inx
+
+#inputs$ctl[22]
+inputs$ctl$recr_dist_pattern
+
+```
+
+## bloques
+```{r}
+#inputs$ctl[23]
+inputs$ctl$N_Block_Designs
+
+#inputs$ctl[24]
+inputs$ctl$blocks_per_pattern
+
+#inputs$ctl[25]
+inputs$ctl$Block_Design
+
+```
+
+
+## tiempo variable
+```{r}
+#inputs$ctl[26]
+inputs$ctl$time_vary_adjust_method
+
+#inputs$ctl[27]
+inputs$ctl$time_vary_auto_generation
+
+```
+
+```{r}
+#inputs$ctl[28]
+inputs$ctl$natM_type
+
+#inputs$ctl[29]
+inputs$ctl$GrowthModel
+
+#inputs$ctl[30]
+inputs$ctl$Growth_Age_for_L1
+
+#inputs$ctl[31]
+inputs$ctl$Growth_Age_for_L2
+
+#inputs$ctl[32]
+inputs$ctl$Exp_Decay
+
+#inputs$ctl[33]
+inputs$ctl$Growth_Placeholder
+
+#inputs$ctl[34]
+inputs$ctl$N_natMparms
+
+#inputs$ctl[35]
+inputs$ctl$SD_add_to_LAA
+
+#inputs$ctl[36]
+inputs$ctl$CV_Growth_Pattern
+
+#inputs$ctl[37]
+inputs$ctl$maturity_option
+
+#inputs$ctl[38]
+inputs$ctl$First_Mature_Age
+
+#inputs$ctl[39]
+inputs$ctl$fecundity_option
+
+#inputs$ctl[40]
+inputs$ctl$hermaphroditism_option
+
+#inputs$ctl[41]
+inputs$ctl$parameter_offset_approach
+
+```
+
+\newpage
+## Parámetros biológicos
+
+```{r}
+#inputs$ctl[42]
+inputs$ctl$MG_parms
+
+```
+
+```{r}
+row.names(inputs$ctl$MG_parms)
+```
+
+```{r}
+names(inputs$ctl$MG_parms)
+```
+
+### Parámetros hembras
+
+#### Mortalidad natural Fem GP_1
+```{r}
+inputs$ctl$MG_parms[1,]
+```
+
+#### longitud a la edad Fem GP_1
+```{r}
+inputs$ctl$MG_parms[2,]
+inputs$ctl$MG_parms[3,]
+```
+
+#### Tasa de crecimiento Fem GP_1
+```{r}
+inputs$ctl$MG_parms[4,]
+```
+
+#### CV crecimiento Fem GP_1
+```{r}
+inputs$ctl$MG_parms[5,]
+inputs$ctl$MG_parms[6,]
+```
+
+#### Relación longitud-peso Fem GP_1
+```{r}
+inputs$ctl$MG_parms[7,]
+inputs$ctl$MG_parms[8,]
+```
+
+#### Relación Madurez Fem GP_1
+```{r}
+inputs$ctl$MG_parms[9,]
+inputs$ctl$MG_parms[10,]
+```
+
+#### Eggs/kg Fem GP_1
+```{r}
+inputs$ctl$MG_parms[11,]
+inputs$ctl$MG_parms[12,]
+```
+
+
+
+### Parámetros Machos
+
+#### Mortalidad natural Mal GP_1
+```{r}
+inputs$ctl$MG_parms[13,]
+```
+
+#### longitud a la edad  Mal GP_1
+```{r}
+inputs$ctl$MG_parms[14,]
+inputs$ctl$MG_parms[15,]
+```
+
+#### Tasa de crecimiento Mal GP_1
+```{r}
+inputs$ctl$MG_parms[16,]
+```
+
+#### CV crecimiento Mal GP_1
+```{r}
+inputs$ctl$MG_parms[17,]
+inputs$ctl$MG_parms[18,]
+```
+
+#### Relación longitud-peso Mal GP_1
+```{r}
+inputs$ctl$MG_parms[19,]
+inputs$ctl$MG_parms[20,]
+```
+
+#### Relación Madurez Mal GP_1
+```{r}
+inputs$ctl$MG_parms[9,]
+inputs$ctl$MG_parms[10,]
+```
+
+#### Eggs/kg Mal GP_1
+```{r}
+inputs$ctl$MG_parms[11,]
+inputs$ctl$MG_parms[12,]
+```
+
+
+
+```{r}
+#inputs$ctl[43]
+inputs$ctl$MGparm_seas_effects
+```
+
+\newpage
+
+## Relación stock recluta
+```{r}
+#inputs$ctl[44]
+inputs$ctl$SR_function
+
+#inputs$ctl[45]
+inputs$ctl$Use_steep_init_equi
+
+#inputs$ctl[46]
+inputs$ctl$Sigma_R_FofCurvature
+
+#inputs$ctl[47]
+inputs$ctl$SR_parms
+```
+
+## Desvíos de los reclutamientos
+```{r}
+#inputs$ctl[48]
+inputs$ctl$do_recdev
+
+#inputs$ctl[49]
+inputs$ctl$MainRdevYrFirst
+
+#inputs$ctl[50]
+inputs$ctl$MainRdevYrLast
+
+#inputs$ctl[51]
+inputs$ctl$recdev_phase
+
+#inputs$ctl[52]
+inputs$ctl$recdev_adv
+
+#inputs$ctl[53]
+inputs$ctl$recdev_early_start
+
+#inputs$ctl[54]
+inputs$ctl$recdev_early_phase
+
+#inputs$ctl[55]
+inputs$ctl$Fcast_recr_phase
+
+```
+
+
+```{r}
+#inputs$ctl[56]
+inputs$ctl$lambda4Fcast_recr_like
+
+#inputs$ctl[57]
+inputs$ctl$last_early_yr_nobias_adj
+
+#inputs$ctl[58]
+inputs$ctl$first_yr_fullbias_adj
+
+#inputs$ctl[59]
+inputs$ctl$last_yr_fullbias_adj
+
+#inputs$ctl[60]
+inputs$ctl$first_recent_yr_nobias_adj
+
+#inputs$ctl[61]
+inputs$ctl$max_bias_adj
+
+```
+
+
+```{r}
+#inputs$ctl[62]
+inputs$ctl$period_of_cycles_in_recr
+
+#inputs$ctl[63]
+inputs$ctl$min_rec_dev
+
+#inputs$ctl[64]
+inputs$ctl$max_rec_dev
+
+#inputs$ctl[65]
+inputs$ctl$N_Read_recdevs
+
+```
+
+\newpage
+## Mortalidad por pesca
+
+```{r}
+#inputs$ctl[66]
+inputs$ctl$F_ballpark
+
+#inputs$ctl[67]
+inputs$ctl$F_ballpark_year
+
+#inputs$ctl[68]
+inputs$ctl$F_Method
+
+#inputs$ctl[69]
+inputs$ctl$maxF
+
+#inputs$ctl[70]
+inputs$ctl$F_iter
+```
+
+\newpage
+## Capturabilidad
+
+### Opciones de capturabilidad
+```{r}
+#inputs$ctl[71]
+inputs$ctl$Q_options
+```
+
+### Parámetros
+```{r}
+#inputs$ctl[72]
+inputs$ctl$Q_parms
+```
+
+\newpage
+## Selectividad
+
+### tipos de selectividad a la talla
+```{r}
+#inputs$ctl[73]
+inputs$ctl$size_selex_types
+```
+
+### tipos de selectividad a la edad
+```{r}
+#inputs$ctl[74]
+inputs$ctl$age_selex_types
+```
+
+### parametros de selectividad a la talla
+
+```{r}
+#inputs$ctl[75]
+inputs$ctl$size_selex_parms
+```
+
+### parametros de selectividad a la edad
+```{r}
+#inputs$ctl[76]
+inputs$ctl$age_selex_parms
+```
+
+
+### otros parámetros ??? REVISAR
+```{r}
+#inputs$ctl[77]
+inputs$ctl$Use_2D_AR1_selectivity
+
+#inputs$ctl[78]
+inputs$ctl$TG_custom
+
+#inputs$ctl[79]
+inputs$ctl$DoVar_adjust
+
+#inputs$ctl[80]
+inputs$ctl$maxlambdaphase
+
+#inputs$ctl[81]
+inputs$ctl$sd_offset
+
+```
+
+\newpage
+## Lambdas
+```{r}
+#inputs$ctl[82]
+inputs$ctl$lambdas
+```
+
+```{r}
+#inputs$ctl[83]
+inputs$ctl$N_lambdas
+```
+
+\newpage
+## more stddev reporting ?? Revisar!!!
+```{r}
+#inputs$ctl[84]
+inputs$ctl$more_stddev_reporting
+```
+
+### epecs ?? revisar!!!
+```{r}
+#inputs$ctl[85]
+inputs$ctl$stddev_reporting_specs
+```
+
+### selectividad
+```{r}
+#inputs$ctl[86]
+inputs$ctl$stddev_reporting_selex
+```
+
+### crecimiento
+```{r}
+#inputs$ctl[87]
+inputs$ctl$stddev_reporting_growth
+```
+
+### abundancia a la edad
+```{r}
+#inputs$ctl[88]
+inputs$ctl$stddev_reporting_N_at_A
+```
+
