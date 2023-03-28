@@ -129,6 +129,58 @@ dir_GSA1 <-  here("hke-GSA1-a4a_ format")
 dir(dir_GSA1)
 ```
 
+#### Archivos utilizado para enfoque de modelación `SS3`
+1. Identificamos el directorio donde se encuentra el modelo base simple
+```{r}
+dirname.base <- here("simple")
+```
+
+3. Creamos un nuevo directorio para la nueva versión del modelo modificado 
+```{r}
+dirname.simple_mod <- here("GSA6_SS3")
+dir.create(path=dirname.simple_mod, showWarnings = TRUE, recursive = TRUE)
+```
+
+5. Copiamos los archivos para el modelo que vamos a  modificar
+```{r}
+copy_SS_inputs(dir.old = dirname.base, 
+               dir.new = dirname.simple_mod,
+               copy_exe = TRUE,
+               verbose = FALSE)
+```
+
+### Información general del modelo
+
+En la parte superior se especifica información general del modelo: los años del modelo, número de temporadas, número de sexos, edad máxima, número de áreas, número de flotas  
+
+[Consulte la Guía de usuario de SS3: Sección 7.5 "Model Dimensions"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#model-dimensions).
+
+
+Revisamos los nombres de los componentes de la lista del archivo .dat
+```{r}
+
+dat <- r4ss::SS_readdat(here(dirname.base,"data.ss")) #base
+dat1<-dat # para modificar
+#names(dat1) 
+```
+
+
+```{r}
+#Especificaciones iniciales
+dat1$styr           <-1971  #_StartYr
+dat1$endyr          <-2001  #_EndYr
+dat1$nseas          <-1     #_Nseas
+dat1$months_per_seas<-12    #_months/season
+dat1$Nsubseasons    <-2     #_Nsubseasons (even number, minimum is 2)
+dat1$spawn_month    <-1     #_spawn_month
+dat1$Ngenders       <-2     #_Ngenders: 1, 2, -1  (use -1 for 1 sex setup with SSB multiplied by 
+#female_frac parameter)
+dat1$Nages          <-40    #_Nages=accumulator age, first age is always age 0
+dat1$N_areas        <-1     #_Nareas
+dat1$Nfleets        <-3     #_Nfleets (including surveys)
+```
+
+
 
 
 #### Capturas anuales del stock (toneladas)
@@ -146,20 +198,76 @@ dir(dir_GSA1)[1]
 
 2. formato SS3
 
-**corregir seas y fleet**
+Primero ingresamos las especificaciones de los Datos de captura de la flota
+
 ```{r}
-catch_gsa1 <- data.frame(year = 2003:2021,
-                        seas = 1,
-                        fleet = 1,
-                        catch = CATCH.DAT$X5,
-                        catch_se = 0.01)
-catch_gsa1
+#_fleet_type: 1=catch fleet; 2=bycatch only fleet; 3=survey; 4=ignore 
+#_sample_timing: -1 for fishing fleet to use season-long catch-at-age for 
+#observations, or 1 to use observation month;  (always 1 for surveys)
+#_fleet_area:  area the fleet/survey operates in 
+#_units of catch:  1=bio; 2=num (ignored for surveys; their units read later)
+#_catch_mult: 0=no; 1=yes
+#_rows are fleets
+#_fleet_type fishery_timing area catch_units need_catch_mult fleetname
+
+# Modificar con los datos propios
+fleetnames1    <-c("FISHERY", "SURVEY1", "SURVEY2")     #character vector
+surveytiming1  <-c(-1,1,1)#numeric vector
+units_of_catch1<-c(1,2,2) #numeric vector
+areas1         <-c(1,1,1) #numeric vector
+
+# crear data.frame para fleetinfo
+fleetinfo1<-data.frame(type = c(1,3,3),
+                       surveytiming =surveytiming1,
+                       area=areas1,
+                       units=units_of_catch1,
+                       need_catch_mult =c(0,0,0),
+                       fleetname=fleetnames1)
+
+dat1$fleetinfo     <- fleetinfo1      #data.frame
+dat1$fleetinfo
+
 ```
+
+A continuación, se especifica la captura. 
+
+[Consulte la Guía de usuario de SS3: Sección 7.9 "Catch"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#catch).
+
+```{r}
+#_Catch data: yr, seas, fleet, catch, catch_se
+#_catch_se:  standard error of log(catch)
+#_NOTE:  catch data is ignored for survey fleets
+
+# Datos de modelo simple
+year<-1971:2001
+nyear<-length(year)
+catch_year<-c(-999,year)
+catch_seas<-rep(1,nyear+1)
+catch_fleet<-rep(1,nyear+1)
+catch_catch<-dat$catch$catch #datos ss3 reemplazar por datos gsa1
+catch_catch_se<-rep(0.01,nyear+1)
+
+# Modificar con los datos propios
+catch1<-data.frame(year=catch_year,
+                   seas=catch_seas,
+                   fleet=catch_fleet,
+                   catch=catch_catch,
+                   catch_se=catch_catch_se)
+dat1$catch<-catch1 # data.frame
+dat1$catch
+
+```
+
+- La primera línea del fragmento de código anterior muestra los encabezados de columna para los datos de captura. 
+
+- Tenga en cuenta que toda la captura proviene de la pesquería. La línea `-999 1 1 0 0.01` especifica la captura  de equilibrio para los años anteriores al inicio del modelo; en este caso, no hay captura de equilibrio porque la columna de captura es 0.
+
 
 \newpage
 
 #### índices de abundancia para calibrar (CPUEs o Campañas, o ambas). Normalmente para índices de campaña empleamos número/KM2.
 \quad
+1. formato a4a
 ```{r}
 dir(dir_GSA1)[12]
   TUNEFF.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[12],sep="/"),
@@ -168,17 +276,176 @@ dir(dir_GSA1)[12]
   
 ```
 
+2. formato SS3
+
+Luego viene la especificación de los índices de abundancia.  Primero está la configuración para todas las flotas. 
+
+[Consulte la Guía de usuario de SS3: Sección 7.10 "Indices"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#indices).
 
 ```{r}
-CPUE_gsa1 <- data.frame(year = 2003:2021, 
-                       seas = 7,
-                       index = c(rep(-2, length.out = length(2003:2021)), 
-                                 rep(-3, length.out = length(2003:2021)),
-                                 rep(-3, length.out = length(2003:2021))), 
-                       obs = c(TUNEFF.DAT$V2,TUNEFF.DAT$V3,TUNEFF.DAT$V4), 
-                       se_log =c(TUNEFF.DAT$V5,TUNEFF.DAT$V6,TUNEFF.DAT$V7))
-CPUE_gsa1
+#_CPUE_and_surveyabundance_observations
+#_Units:  0=numbers; 1=biomass; 2=F; >=30 for special types
+#_Errtype:  -1=normal; 0=lognormal; >0=T
+#_SD_Report: 0=no sdreport; 1=enable sdreport
+#_Fleet Units Errtype SD_Report
+
+# Datos de modelo simple
+CPUEinfo_Fleet    <-c(1,2,3)
+CPUEinfo_Units    <-c(1,1,0)
+CPUEinfo_Errtype  <-c(0,0,0)
+CPUEinfo_SD_Report<-c(0,1,0)
+CPUEinfo_names    <-c("FISHERY", "SURVEY1", "SURVEY2")
+
+# Modificar con los datos propios
+CPUEinfo1<-data.frame(Fleet=CPUEinfo_Fleet,
+                      Units=CPUEinfo_Units,
+                      Errtype=CPUEinfo_Errtype,
+                      SD_Report=CPUEinfo_SD_Report)
+
+row.names(CPUEinfo1)<-CPUEinfo_names
+
+dat1$CPUEinfo<-CPUEinfo1 # data.frame
+dat1$CPUEinfo
 ```
+
+- Los encabezados de las columnas de esta sección están directamente encima de los números. Tenga en cuenta que aquí se definen todas las flotas (es decir, cada flota necesita una línea), incluida la pesquería, y se enumeran en el mismo orden que cuando se especificaron los tipos de flota.
+
+- Lo más importante en esta sección es que se especifican las unidades y el tipo de error que se utilizará al leer los índices de abundancia. 
+
+- En este caso, la pesquería y la campaña 1 tienen unidades de biomasa, mientras que la campaña 2 es en números. Se asume un error logarítmico normal para las 3 flotas.
+
+- Inmediatamente después de su encabezado, se incluyen los datos de índices de abundancia:
+
+```{r}
+# Datos de modelo simple
+yearf1<-c(seq(1977,1998,3),2001)
+yearf2<-seq(1990,2001,1)
+
+CPUE_year   <-c(yearf1,yearf2)
+CPUE_seas   <-rep(7,length(CPUE_year))
+CPUE_index  <-c(rep(2,length(yearf1)),rep(3,length(yearf2)))
+CPUE_obs    <-dat$CPUE$obs 
+CPUE_se_log <-c(rep(0.3,length(yearf1)),rep(0.7,length(yearf2)))
+
+# Modificar con los datos propios
+CPUE1<-data.frame(year=CPUE_year,
+                  seas=CPUE_seas,
+                  index=CPUE_index,
+                  obs=dat$CPUE$obs,
+                  se_log=CPUE_se_log)
+
+dat1$CPUE<-CPUE1 # data.frame
+dat1$CPUE
+```
+
+### Descartes y tallas medias
+
+A continuación, se podrían especificar los datos de descartes y tallas media, pero son 0 en este ejemplo. 
+
+[Consulte la Guía de usuario de SS3: Sección 7.11 "Discard"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#discard).
+
+
+```{r}
+# Modificar con los datos propios
+dat1$N_discard_fleets <-0 #numeric
+dat1$use_meanbodywt   <-0 #numeric
+```
+
+### Composición de tallas
+
+La siguiente sección configura los intervalos de talla (`length bin`) de la población. 
+
+Esto debe especificarse ya sea que se utilicen o no datos de composiciones de tallas (aunque podría generar los intervalos de longitud de la población a partir de los intervalos de datos de composiciones de tallas). 
+
+[Consulte la Guía de usuario de SS3: Sección 7.14 "Length Composition Data Structure"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#length-composition-data-structure).
+
+```{r}
+# set up population length bin structure (note - irrelevant if not using size 
+#data and using empirical wtatage
+
+# Modificar con los datos propios
+dat1$lbin_method  <-2 # length bin method:1=use databins; 
+                      # 2=generate from binwidth,min,max below;
+                      # 3=read vector
+dat1$binwidth     <-2  # binwidth for population size comp 
+dat1$minimum_size <-10 # minimum size in the population 
+                       # (lower edge of first bin and size at age 0.00) 
+dat1$maximum_size <-94 # maximum size in the population (lower edge of last bin) 
+dat1$use_lencompz <-1  # use length composition data (0/1)
+```
+
+Después de los intervalos de tallas de la población está la especificación para la composición de tallas (asumiendo 1 línea por flota):
+
+```{r}
+
+len_info_mintailcomp   <-rep(0,3)
+len_info_addtocomp     <-rep(1e-07,3)
+len_info_combine_M_F   <-rep(0,3)
+len_info_CompressBins  <-rep(0,3)
+len_info_CompError     <-rep(0,3)
+len_info_ParmSelect    <-rep(0,3)
+len_info_minsamplesize <-rep(1,3)
+
+# Modificar con los datos propios
+len_info1 <- data.frame(mintailcomp=len_info_mintailcomp,
+                        addtocomp=len_info_addtocomp,
+                        combine_M_F=len_info_combine_M_F,
+                        CompressBins=len_info_CompressBins,
+                        CompError=len_info_CompError,
+                        ParmSelect=len_info_ParmSelect,
+                        minsamplesize=len_info_minsamplesize)
+
+row.names(len_info1)<-c("FISHERY", "SURVEY1", "SURVEY2")
+
+dat1$len_info   <- len_info1 #data.frame
+dat1$len_info
+
+```
+
+La especificación del vector de tallas:
+
+```{r}
+# Modificar con los datos propios
+dat1$N_lbins     <-25  #numeric
+dat1$lbin_vector <-c(seq(26,64,2),seq(68,80,4),90) #numeric vector
+
+```
+
+Y luego los datos de composición de tallas:
+
+```{r}
+
+# separar por sexo !!!!!
+
+# Modificar con los datos propios
+new_lencomp_flt_1 <- data.frame(Yr = 2002:2021, 
+                                Seas = 7, 
+                                FltSvy = -1, 
+                                Gender = 3, 
+                                Part = 0, 
+                                Nsamp = 125)
+
+new_lencomp_flt_2 <- data.frame(Yr = seq(2002, 2021, by = 3), 
+                                Seas = 7, 
+                                FltSvy = -2, 
+                                Gender = 3, 
+                                Part = 0, 
+                                Nsamp = 125)
+
+dat_rows_names <- colnames(dat$lencomp)[-(1:6)]
+dat_rows <- as.data.frame(matrix(data = 1, nrow = nrow(new_lencomp_flt_1)+nrow(new_lencomp_flt_2), 
+                   ncol = length(dat_rows_names)))
+names(dat_rows) <- dat_rows_names 
+
+
+new_lencomp <- rbind(new_lencomp_flt_1, new_lencomp_flt_2)
+new_lencomp <- cbind(new_lencomp, dat_rows)
+
+dat1$lencomp <- rbind(dat$lencomp, new_lencomp) #data.frame
+```
+
+En este modelo de 2 sexos, los datos de composición de tallas se introducen para las hembras, con 1 número por intervalo de tallas especificado previamente, seguido de los datos de composición de tallas para los machos, también con 1 número por intervalo de tallas.
+
 
 \newpage
 
@@ -192,9 +459,124 @@ dir(dir_GSA1)[2]
   
 ```
 
-```{r}
+### Composiciones de edad
 
+
+A continuación se presentan los datos de composición por edad. En primer lugar, se establecen las categorías de edad y las definiciones de error de edad.
+
+[Consulte la Guía de usuario de SS3: Sección 7.16 "Age Composition Option"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#age-composition-option).
+
+
+
+Datos de error edad
+```{r}
+# datos de modelo simple
+dat$ageerror
+
+# Modificar con los datos propios
+dat1$ageerror <- dat$ageerror #data.frame
 ```
+
+Especificaciones de los datos de composicion de edad
+```{r}
+# datos de modelo simple
+dat$age_info
+
+# Modificar con los datos propios
+age_info1<-data.frame(mintailcomp=dat$age_info$mintailcomp,
+                      addtocomp=dat$age_info$addtocomp,
+                      combine_M_F=dat$age_info$combine_M_F,
+                      CompressBins=dat$age_info$CompressBins,
+                      CompError=dat$age_info$CompError,
+                      ParmSelect=dat$age_info$ParmSelect,
+                      minsamplesize=dat$age_info$minsamplesize)
+
+row.names(age_info1)<-c("FISHERY", "SURVEY1", "SURVEY2")
+
+dat1$age_info <- age_info1 #data.frame
+```
+
+Datos de composicion de edad
+```{r}
+# Modificar con los datos propios
+new_agecomp_flt_1 <- data.frame(Yr=2002:2021, 
+                                Seas=7, 
+                                FltSvy=-1, 
+                                Gender=3, 
+                                Part=0,  
+                                Ageerr=2, 
+                                Lbin_lo=-1, 
+                                Lbin_hi=-1, 
+                                Nsamp=75)
+
+new_agecomp_flt_2 <- data.frame(Yr=seq(2002, 2021, by = 3), 
+                                Seas=7, 
+                                FltSvy=-2, 
+                                Gender=3, 
+                                Part=0, 
+                                Ageerr=2,
+                                Lbin_lo=-1, 
+                                Lbin_hi=-1, 
+                                Nsamp=75)
+
+dat_rows_names <- colnames(dat$agecomp)[-(1:9)]
+
+dat_rows <- as.data.frame(matrix(data = 1, nrow = nrow(new_agecomp_flt_1)+nrow(new_agecomp_flt_2), 
+                                 ncol = length(dat_rows_names)))
+
+names(dat_rows) <- dat_rows_names 
+
+new_agecomp  <- rbind(new_agecomp_flt_1, new_agecomp_flt_2)
+new_agecomp  <- cbind(new_agecomp, dat_rows)
+dat1$agecomp <- rbind(dat$agecomp, new_agecomp) #data.frame
+``` 
+
+
+Otros datos
+```{r}
+# Modificar con los datos propios
+dat1$use_MeanSize_at_Age_obs <- 1 #numeric
+
+MeanSize_at_Age_obs_esp<-data.frame(Yr=dat$MeanSize_at_Age_obs$Yr,
+                                    Seas=dat$MeanSize_at_Age_obs$Seas,
+                                    FltSvy=dat$MeanSize_at_Age_obs$FltSvy,
+                                    Gender=dat$MeanSize_at_Age_obs$Gender,
+                                    Part=dat$MeanSize_at_Age_obs$Part,
+                                    AgeErr=dat$MeanSize_at_Age_obs$AgeErr,
+                                    Ignore=dat$MeanSize_at_Age_obs$Ignore)
+
+MeanSize_at_Age_obs_f   <-dat$MeanSize_at_Age_obs[,8:24]
+MeanSize_at_Age_obs_m   <-dat$MeanSize_at_Age_obs[,25:41]
+MeanSize_at_Age_obs_N_f <-dat$MeanSize_at_Age_obs[,42:58]
+
+dat_rows_names <-c(colnames(MeanSize_at_Age_obs_esp),colnames(dat$MeanSize_at_Age_obs[1,8:58]))
+
+MeanSize_at_Age_obs1 <-cbind(MeanSize_at_Age_obs_esp,
+                              MeanSize_at_Age_obs_f,
+                              MeanSize_at_Age_obs_m,
+                              MeanSize_at_Age_obs_N_f)
+
+names(MeanSize_at_Age_obs1) <-dat_rows_names 
+
+dat1$MeanSize_at_Age_obs<-MeanSize_at_Age_obs1 #data.frame
+```
+
+```{r}
+# Modificar con los datos propios
+dat1$N_environ_variables    <-0 #numeric
+dat1$N_sizefreq_methods     <-0 #numeric
+dat1$do_tags                <-0 #numeric
+dat1$morphcomp_data         <-0 #numeric
+dat1$use_selectivity_priors <-0 #numeric
+dat1$eof                    <-TRUE #logical
+```
+
+\newpage
+# Escribir archivo dat modificado con la función  `SS_write`
+```{r eval=F}
+r4ss::SS_writedat(dat1,outfile=here(dirname.simple_mod,"data.ss"),overwrite = TRUE)
+```
+
 
 \newpage
 
@@ -274,6 +656,8 @@ dir_GSA6 <-  here("hke_GSA6_a4a_format")
 dir(dir_GSA6)
 
 ```
+
+
 
 #### Capturas anuales del stock (toneladas)
 \quad
