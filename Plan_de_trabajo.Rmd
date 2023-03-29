@@ -1,16 +1,31 @@
 ---
-title: "Montaje de los archivos de entrada al modelo SS3, formatos requeridos y aprovechamiento si fuera
-posible de los utilizados en las entradas de a4a."
+title: "Montaje de los archivos de entrada al modelo SS3, formatos requeridos y aprovechamiento de los utilizados en las entradas de a4a."
 author: " "
 date: '`r format(Sys.Date(),"%B, %d, %Y")`'
 output: 
   pdf_document:
-   toc: TRUE
-   number_sections: yes
+      toc: TRUE
+      toc_depth: '3'
+      number_sections: yes
 urlcolor: blue   
 ---
 
 \newpage
+
+
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.align="center",fig.pos="h!")
+```
+
+
+
+```{r results='hide',include=FALSE}
+## Librerías requeridas
+ paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
+               "patchwork","dplyr","reshape","here","r4ss")
+ lapply(paquetes, require, character.only = TRUE)
+```
+
 
 # Contexto
 
@@ -34,7 +49,7 @@ Dentro de la propuesta se han identificado las posibles tareas a desarrollar que
  7.	Estudio de la viabilidad y/o idoneidad de estructurar la evaluación con estos stocks usando Stock Synthesis para los grupos de trabajo del GFCM el año que viene (WGSAD 2023).
 
 
-# Temporalización y dinámica de las actividades propuestas.
+## Temporalización y dinámica de las actividades propuestas.
 
 El flujo de trabajo tendría tres fases bien definidas, una inicial en la cual de forma telemática se completarían los puntos 1, 2 y 3 de la propuesta. Se propone completar esta fase antes del 31 de marzo de 2023.
 
@@ -42,25 +57,34 @@ En una segunda fase de desarrollo, se realizarían las primeras rodadas tentativ
 
 En una última fase se analizarían telemáticamente los resultados obtenidos y la viabilidad e idoneidad del paso de a4a a Stock Synthesis para los dos stocks evaluados. Esta fase tendría dos fechas diferenciadas, una a final de mayo para confeccionar y enviar los resultados al SIMERPE II y otra en noviembre para dejar lista la evaluación de ambos stocks para su posible presentación en el WGSAD-GFCM en diciembre de 2023.
 
-
-# Análisis de datos de los stocks de merluza europea (*Merluccius merluccius*) de la GSA1 (mar de Alborán) y GSA6 (Levante-Norte de España).
-
-
-```{r global-options, include=FALSE}
-knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.align="center",fig.pos="h!")
-```
+\newpage
+# Descripción general del modelo de merluza europea (*Merluccius merluccius*) de la GSA1 (mar de Alborán).
 
 
+## Modelo conceptual
+\quad
+La conceptualización del modelo biológico de **GSA1** considera los siguientes componentes de la dinámica poblacional:
 
-```{r results='hide',include=FALSE}
-## Librerías requeridas
- paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
-               "patchwork","dplyr","reshape","here","r4ss")
- lapply(paquetes, require, character.only = TRUE)
-```
+ - Estructura geográfica
+ - Reproducción
+ - Reclutamiento
+ - Mortalidad natural
+ - Crecimiento
+ - otros...
 
-## Leer datos formato a4a
 
+## Descripción general del modelo implementado en `a4a`
+\quad
+El modelo de evaluación de stock de **GSA1** se basa en un análisis estadístico de la dinámica de estructuras de edad anual que incorpora información biológica y pesquera. La información que ingresa al modelo consiste en ... 
+
+- Años de evaluación de stock = 2003_2021
+- número de edades = 6 años ?
+
+\newpage
+# Revisión de los archivos requeridos para cada enfoque de modelación
+
+## Archivos utilizado para enfoque de modelación `a4a`
+\quad
 El modelo SCAA a4a está implementado en FLR  (https://flr-project.org/doc/Loading_your_data_into_FLR.html
 , por lo tanto la arquitectura de sus ficheros imput sigue se estructura en torno a la clase FLStock con los siguientes slots:
 
@@ -98,38 +122,13 @@ A continuación describimos brevemente cada uno de los archivos .DAT que usamos 
 - LOWIND: Fichero índice.
 - INCHECK: Este no es un fichero imput propiamente dicho. Se trata del fichero resumen tras realizar el slicing con el programa L2age. Se recogen aquí el set de parámetros de crecimiento utilizados.
 
-\newpage
 
-### GSA1 (mar de Alborán)
-
-#### Modelo conceptual
-\quad
-La conceptualización del modelo biológico de **GSA1** considera los siguientes componentes de la dinámica poblacional:
-
- - Estructura geográfica
- - Reproducción
- - Reclutamiento
- - Mortalidad natural
- - Crecimiento
- - otros...
-
-
-#### Descripción del modelo
-\quad
-El modelo de evaluación de stock de **GSA1** se basa en un análisis estadístico de la dinámica de estructuras de edad anual que incorpora información biológica y pesquera. La información que ingresa al modelo consiste en ... 
-
-- Años de evaluación de stock = 2003_2021
-- número de edades = 6 años ?
-
-
-#### Archivos utilizado para enfoque de modelación `a4a`
-\quad
 ```{r}
 dir_GSA1 <-  here("hke-GSA1-a4a_ format")
 dir(dir_GSA1)
 ```
 
-#### Archivos utilizado para enfoque de modelación `SS3`
+## Archivos utilizado para enfoque de modelación `SS3`
 1. Identificamos el directorio donde se encuentra el modelo base simple
 ```{r}
 dirname.base <- here("simple")
@@ -149,7 +148,16 @@ copy_SS_inputs(dir.old = dirname.base,
                verbose = FALSE)
 ```
 
-### Información general del modelo
+\newpage
+# Descripción del Formado de entrada de datos para cada enfoque de modelación
+
+## Datos de entrada 
+
+### Información general del modelo Formato `a4a`
+
+Buscar esta información en archivos entregados!!!
+
+### Información general del modelo Formato `SS3`
 
 En la parte superior se especifica información general del modelo: los años del modelo, número de temporadas, número de sexos, edad máxima, número de áreas, número de flotas  
 
@@ -161,46 +169,51 @@ Revisamos los nombres de los componentes de la lista del archivo .dat
 
 dat <- r4ss::SS_readdat(here(dirname.base,"data.ss")) #base
 dat1<-dat # para modificar
-#names(dat1) 
+#names(dat1) # muestra los objetos de la lista
 ```
 
 
 ```{r}
 #Especificaciones iniciales
-dat1$styr           <-1971  #_StartYr
-dat1$endyr          <-2001  #_EndYr
+dat1$styr           <-2003  #_StartYr
+dat1$endyr          <-2021  #_EndYr
 dat1$nseas          <-1     #_Nseas
 dat1$months_per_seas<-12    #_months/season
 dat1$Nsubseasons    <-2     #_Nsubseasons (even number, minimum is 2)
-dat1$spawn_month    <-1     #_spawn_month
-dat1$Ngenders       <-2     #_Ngenders: 1, 2, -1  (use -1 for 1 sex setup with SSB multiplied by 
-#female_frac parameter)
-dat1$Nages          <-40    #_Nages=accumulator age, first age is always age 0
+dat1$spawn_month    <-6     #_spawn_month (puesta alrededor de junio)
+dat1$Ngenders       <-1     #_Ngenders: 1, 2, -1  (use -1 for 1 sex setup with SSB 
+                            # multiplied by female_frac parameter)
+dat1$Nsexes         <-1
+dat1$Nages          <-6    #_Nages=accumulator age, first age is always age 0
 dat1$N_areas        <-1     #_Nareas
-dat1$Nfleets        <-3     #_Nfleets (including surveys)
+dat1$Nfleets        <-4     #_Nfleets (including surveys)
 ```
 
 
+\newpage
+### Capturas en formato `a4a`
 
+Capturas anuales del stock (toneladas)
 
-#### Capturas anuales del stock (toneladas)
-\quad
-
-1. formato a4a
 ```{r}
 dir(dir_GSA1)[1]
   CATCH.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[1],sep="/"),
                           header=T,sep="",na="NA",fill=T,skip = 4)
   CATCH.DAT
-  
 ```
 
 
-2. formato SS3
+### Capturas en formato `SS3`
 
 Primero ingresamos las especificaciones de los Datos de captura de la flota
 
+[Consulte la Guía de usuario de SS3: Sección 7.9 "Catch"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#catch).
+
+
+#### Especificaciones de datos de captura
+\quad
 ```{r}
+#---------------------------------------------------------------------------------
 #_fleet_type: 1=catch fleet; 2=bycatch only fleet; 3=survey; 4=ignore 
 #_sample_timing: -1 for fishing fleet to use season-long catch-at-age for 
 #observations, or 1 to use observation month;  (always 1 for surveys)
@@ -209,53 +222,55 @@ Primero ingresamos las especificaciones de los Datos de captura de la flota
 #_catch_mult: 0=no; 1=yes
 #_rows are fleets
 #_fleet_type fishery_timing area catch_units need_catch_mult fleetname
-
-# Modificar con los datos propios
-fleetnames1    <-c("FISHERY", "SURVEY1", "SURVEY2")     #character vector
-surveytiming1  <-c(-1,1,1)#numeric vector
-units_of_catch1<-c(1,2,2) #numeric vector
-areas1         <-c(1,1,1) #numeric vector
-
-# crear data.frame para fleetinfo
-fleetinfo1<-data.frame(type = c(1,3,3),
+#---------------------------------------------------------------------------------
+# Arreglo de datos
+fleetnames1<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")     
+type1<-c(1,3,3,3)
+surveytiming1<-c(-1,1,1,1)
+units_of_catch1<-c(1,2,2,2) 
+areas1<-c(1,1,1,1) 
+need_catch_mult1<-c(0,0,0,0)
+#---------------------------------------------------------------------------------
+# crear data.frame 
+fleetinfo1<-data.frame(type = type1,
                        surveytiming =surveytiming1,
                        area=areas1,
                        units=units_of_catch1,
-                       need_catch_mult =c(0,0,0),
+                       need_catch_mult =need_catch_mult1,
                        fleetname=fleetnames1)
-
-dat1$fleetinfo     <- fleetinfo1      #data.frame
+#---------------------------------------------------------------------------------
+dat1$fleetinfo<-fleetinfo1     
 dat1$fleetinfo
-
+#---------------------------------------------------------------------------------
 ```
 
-A continuación, se especifica la captura. 
-
-[Consulte la Guía de usuario de SS3: Sección 7.9 "Catch"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#catch).
-
+#### Datos de captura
+\quad
 ```{r}
+#---------------------------------------------------------------------------------
 #_Catch data: yr, seas, fleet, catch, catch_se
 #_catch_se:  standard error of log(catch)
 #_NOTE:  catch data is ignored for survey fleets
-
-# Datos de modelo simple
-year<-1971:2001
+#---------------------------------------------------------------------------------
+# Arreglo de Datos
+year<-2003:2021
 nyear<-length(year)
 catch_year<-c(-999,year)
 catch_seas<-rep(1,nyear+1)
 catch_fleet<-rep(1,nyear+1)
-catch_catch<-dat$catch$catch #datos ss3 reemplazar por datos gsa1
-catch_catch_se<-rep(0.01,nyear+1)
-
-# Modificar con los datos propios
+catch_catch<-c(0,CATCH.DAT$X5) 
+catch_catch_se<-rep(0.01,nyear+1) # se asume cv = 0.01 Revisar!!!!
+#---------------------------------------------------------------------------------
+# crear data.frame 
 catch1<-data.frame(year=catch_year,
                    seas=catch_seas,
                    fleet=catch_fleet,
                    catch=catch_catch,
                    catch_se=catch_catch_se)
-dat1$catch<-catch1 # data.frame
+#---------------------------------------------------------------------------------
+dat1$catch<-catch1 
 dat1$catch
-
+#---------------------------------------------------------------------------------
 ```
 
 - La primera línea del fragmento de código anterior muestra los encabezados de columna para los datos de captura. 
@@ -265,129 +280,206 @@ dat1$catch
 
 \newpage
 
-#### índices de abundancia para calibrar (CPUEs o Campañas, o ambas). Normalmente para índices de campaña empleamos número/KM2.
-\quad
-1. formato a4a
+### Indices de abundancia formato `a4a`
+
+Índices de abundancia para calibrar (CPUEs o Campañas, o ambas). Normalmente para índices de campaña empleamos número/KM2.
+
 ```{r}
 dir(dir_GSA1)[12]
-  TUNEFF.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[12],sep="/"),
-                           sep="",na="NA",fill=T,skip = 6)
+  TUNEFF.DAT<-read.table(paste(dir_GSA1,dir(dir_GSA1)[12],sep="/"),
+                         sep="",na="NA",fill=T,skip = 6)
   TUNEFF.DAT
   
 ```
 
-2. formato SS3
+### Indices de abundancia formato `SS3`
 
 Luego viene la especificación de los índices de abundancia.  Primero está la configuración para todas las flotas. 
 
 [Consulte la Guía de usuario de SS3: Sección 7.10 "Indices"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#indices).
 
+#### Especificaciones de los índices de abundancia
+\quad
 ```{r}
+#---------------------------------------------------------------------------------
 #_CPUE_and_surveyabundance_observations
 #_Units:  0=numbers; 1=biomass; 2=F; >=30 for special types
 #_Errtype:  -1=normal; 0=lognormal; >0=T
 #_SD_Report: 0=no sdreport; 1=enable sdreport
 #_Fleet Units Errtype SD_Report
-
-# Datos de modelo simple
-CPUEinfo_Fleet    <-c(1,2,3)
-CPUEinfo_Units    <-c(1,1,0)
-CPUEinfo_Errtype  <-c(0,0,0)
-CPUEinfo_SD_Report<-c(0,1,0)
-CPUEinfo_names    <-c("FISHERY", "SURVEY1", "SURVEY2")
-
-# Modificar con los datos propios
+#---------------------------------------------------------------------------------
+# Arreglo de datos
+CPUEinfo_Fleet<-c(1,2,3,4)
+CPUEinfo_Units<-c(1,1,1,1) # unidades la dejamos en 1=biomass Revisar!!!
+CPUEinfo_Errtype<-c(0,0,0,0) # en general se trabaja lognormal
+CPUEinfo_SD_Report<-c(0,0,0,0) # esto se puede cambiar después si se necesita
+                               # SD_Report, por ahora no es necesario...
+CPUEinfo_names<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")
+#---------------------------------------------------------------------------------
+# crear data.frame 
 CPUEinfo1<-data.frame(Fleet=CPUEinfo_Fleet,
                       Units=CPUEinfo_Units,
                       Errtype=CPUEinfo_Errtype,
                       SD_Report=CPUEinfo_SD_Report)
 
 row.names(CPUEinfo1)<-CPUEinfo_names
-
-dat1$CPUEinfo<-CPUEinfo1 # data.frame
+#---------------------------------------------------------------------------------
+dat1$CPUEinfo<-CPUEinfo1 
 dat1$CPUEinfo
+#---------------------------------------------------------------------------------
 ```
 
 - Los encabezados de las columnas de esta sección están directamente encima de los números. Tenga en cuenta que aquí se definen todas las flotas (es decir, cada flota necesita una línea), incluida la pesquería, y se enumeran en el mismo orden que cuando se especificaron los tipos de flota.
 
 - Lo más importante en esta sección es que se especifican las unidades y el tipo de error que se utilizará al leer los índices de abundancia. 
 
-- En este caso, la pesquería y la campaña 1 tienen unidades de biomasa, mientras que la campaña 2 es en números. Se asume un error logarítmico normal para las 3 flotas.
+- En este caso, la pesquería y las campañas  tienen unidades de biomasa. Revisar que pasa si lo cambiamos a número. Se asume un error logarítmico normal para las 3 flotas.
 
 - Inmediatamente después de su encabezado, se incluyen los datos de índices de abundancia:
 
+#### Datos de índices de abundancia
+\quad
 ```{r}
-# Datos de modelo simple
-yearf1<-c(seq(1977,1998,3),2001)
-yearf2<-seq(1990,2001,1)
-
-CPUE_year   <-c(yearf1,yearf2)
-CPUE_seas   <-rep(7,length(CPUE_year))
-CPUE_index  <-c(rep(2,length(yearf1)),rep(3,length(yearf2)))
-CPUE_obs    <-dat$CPUE$obs 
-CPUE_se_log <-c(rep(0.3,length(yearf1)),rep(0.7,length(yearf2)))
-
-# Modificar con los datos propios
+#---------------------------------------------------------------------------------
+# Arreglo de datos
+yearf1<-2003:2021
+yearf2<-2003:2021
+yearf3<-2003:2021
+CPUE_year<-c(yearf1,yearf2,yearf3)
+#CPUE_seas = fecha e las campañas, se asume 1 (enero), 
+#corregir por el mes correspondiente
+CPUE_seas<-rep(1,length(CPUE_year)) 
+# Los números de "CPUE_index" son los mismos números de "Fleet" 
+# que se especifican en "CPUEinfo"
+CPUE_index<-c(rep(2,length(yearf1)),
+              rep(3,length(yearf2)),
+              rep(4,length(yearf3))) 
+CPUE_obs<-c(TUNEFF.DAT$V2,
+            TUNEFF.DAT$V3,
+            TUNEFF.DAT$V4)  
+CPUE_se_log<-c(TUNEFF.DAT$V5,
+               TUNEFF.DAT$V6,
+               TUNEFF.DAT$V7) 
+#---------------------------------------------------------------------------------
+# crear data.frame 
 CPUE1<-data.frame(year=CPUE_year,
                   seas=CPUE_seas,
                   index=CPUE_index,
-                  obs=dat$CPUE$obs,
+                  obs=CPUE_obs,
                   se_log=CPUE_se_log)
-
-dat1$CPUE<-CPUE1 # data.frame
+#---------------------------------------------------------------------------------
+dat1$CPUE<-CPUE1 
 dat1$CPUE
+#---------------------------------------------------------------------------------
 ```
 
-### Descartes y tallas medias
+\newpage
 
-A continuación, se podrían especificar los datos de descartes y tallas media, pero son 0 en este ejemplo. 
+### Descartes y tallas medias Formato `a4a`
+
+En este modelo no se ingresan datos de estructuras de tallas.
+
+### Descartes y tallas medias Formato `SS3`
+
+A continuación, se podrían especificar los datos de descartes y tallas media.
 
 [Consulte la Guía de usuario de SS3: Sección 7.11 "Discard"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#discard).
 
-
+#### Descarte
+\quad
 ```{r}
-# Modificar con los datos propios
-dat1$N_discard_fleets <-0 #numeric
-dat1$use_meanbodywt   <-0 #numeric
+dat1$N_discard_fleets<-0 #_N_fleets_with_discard
+#---------------------------------------------------------------------------------
+#_discard_units (1=same_as_catchunits(bio/num); 
+#                2=fraction; 
+#                3=numbers)
+#_discard_errtype:  >0 for DF of T-dist(read CV below); 
+#                    0 for normal with CV; 
+#                   -1 for normal with se; 
+#                   -2 for lognormal; 
+#                   -3 for trunc normal with CV
+# note: only enter units and errtype for fleets with discard 
+# note: discard data is the total for an entire season, so input of month
+#       here must be to a month in that season
+#_Fleet units errtype
+#---------------------------------------------------------------------------------
+# -9999 0 0 0.0 0.0 # terminator for discard data 
 ```
 
-### Composición de tallas
+#### Tallas medias
+\quad
+```{r}
+dat1$use_meanbodywt<-0 #_use meanbodysize_data (0/1)
+#---------------------------------------------------------------------------------
+#_COND_0 #_DF_for_meanbodysize_T-distribution_like
+# note:  type=1 for mean length; type=2 for mean body weight 
+#_yr month fleet part type obs stderr
+#---------------------------------------------------------------------------------
+#  -9999 0 0 0 0 0 0 # terminator for mean body size data 
+```
 
+\newpage
+### Composición de tallas Formato `a4a`
+
+En este modelo no se ingresan datos de estructuras de tallas.
+
+
+### Composición de tallas Formato `SS3`
 La siguiente sección configura los intervalos de talla (`length bin`) de la población. 
 
 Esto debe especificarse ya sea que se utilicen o no datos de composiciones de tallas (aunque podría generar los intervalos de longitud de la población a partir de los intervalos de datos de composiciones de tallas). 
 
 [Consulte la Guía de usuario de SS3: Sección 7.14 "Length Composition Data Structure"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#length-composition-data-structure).
 
+#### Bins tallas
+\quad
 ```{r}
 # set up population length bin structure (note - irrelevant if not using size 
 #data and using empirical wtatage
-
-# Modificar con los datos propios
-dat1$lbin_method  <-2 # length bin method:1=use databins; 
-                      # 2=generate from binwidth,min,max below;
-                      # 3=read vector
-dat1$binwidth     <-2  # binwidth for population size comp 
-dat1$minimum_size <-10 # minimum size in the population 
-                       # (lower edge of first bin and size at age 0.00) 
-dat1$maximum_size <-94 # maximum size in the population (lower edge of last bin) 
-dat1$use_lencompz <-1  # use length composition data (0/1)
+dat1$lbin_method<-2     # length bin method:1=use databins; 
+                        # 2=generate from binwidth,min,max below;
+                        # 3=read vector
+dat1$binwidth<-2        # binwidth for population size comp 
+dat1$minimum_size<-10   # minimum size in the population 
+                        # (lower edge of first bin and size at age 0.00) 
+dat1$maximum_size<-70   # maximum size in the population (lower edge of last bin) 
+                        # Valor asumido, Revisar!!! aunque no se usan datos de tallas 
+                        # en este recurso.
+dat1$use_lencomp<-0     # use length composition data (0/1)
 ```
 
 Después de los intervalos de tallas de la población está la especificación para la composición de tallas (asumiendo 1 línea por flota):
 
+#### Especificación composición de tallas
+\quad
 ```{r}
-
-len_info_mintailcomp   <-rep(0,3)
-len_info_addtocomp     <-rep(1e-07,3)
-len_info_combine_M_F   <-rep(0,3)
-len_info_CompressBins  <-rep(0,3)
-len_info_CompError     <-rep(0,3)
-len_info_ParmSelect    <-rep(0,3)
-len_info_minsamplesize <-rep(1,3)
-
-# Modificar con los datos propios
-len_info1 <- data.frame(mintailcomp=len_info_mintailcomp,
+#---------------------------------------------------------------------------------
+#_mintailcomp:  upper and lower distribution for females and males separately are 
+#               accumulated until exceeding this level.
+#_addtocomp:    after accumulation of tails; this value added to all bins
+#_combM+F:      males and females treated as combined gender below this bin number 
+#_compressbins: accumulate upper tail by this number of bins; acts simultaneous with
+#               mintailcomp; set=0 for no forced accumulation
+#_Comp_Error:   0=multinomial, 
+#               1=dirichlet using Theta*n, 
+#               2=dirichlet using beta, 
+#               3=MV_Tweedie
+#_ParmSelect:  consecutive index for dirichlet or MV_Tweedie
+#_minsamplesize: minimum sample size; set to 1 to match 3.24, minimum value is 0.001
+#
+#_mintailcomp addtocomp combM+F CompressBins CompError ParmSelect minsamplesize
+#---------------------------------------------------------------------------------
+# Arreglo de datos
+len_info_mintailcomp<-rep(-1,4)
+len_info_addtocomp<-rep(0.001,4)
+len_info_combine_M_F<-rep(0,4)
+len_info_CompressBins<-rep(0,4)
+len_info_CompError<-rep(0,4)
+len_info_ParmSelect<-rep(0,4)
+len_info_minsamplesize<-rep(1,4)
+#---------------------------------------------------------------------------------
+# crear data.frame 
+len_info1<-data.frame(mintailcomp=len_info_mintailcomp,
                         addtocomp=len_info_addtocomp,
                         combine_M_F=len_info_combine_M_F,
                         CompressBins=len_info_CompressBins,
@@ -395,111 +487,146 @@ len_info1 <- data.frame(mintailcomp=len_info_mintailcomp,
                         ParmSelect=len_info_ParmSelect,
                         minsamplesize=len_info_minsamplesize)
 
-row.names(len_info1)<-c("FISHERY", "SURVEY1", "SURVEY2")
-
-dat1$len_info   <- len_info1 #data.frame
+row.names(len_info1)<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")
+#---------------------------------------------------------------------------------
+dat1$len_info<-len_info1 #data.frame
 dat1$len_info
-
+#---------------------------------------------------------------------------------
 ```
 
-La especificación del vector de tallas:
-
+#### Especificación del vector de tallas
+\quad
 ```{r}
-# Modificar con los datos propios
-dat1$N_lbins     <-25  #numeric
-dat1$lbin_vector <-c(seq(26,64,2),seq(68,80,4),90) #numeric vector
-
+dat1$N_lbins<-26  
+dat1$lbin_vector<-seq(20,70,2) 
 ```
 
-Y luego los datos de composición de tallas:
-
+#### Datos de composición de tallas
+\quad
 ```{r}
+#---------------------------------------------------------------------------------
+# sex codes:  0=combined; 
+#             1=use female only; 
+#             2=use male only; 
+#             3=use both as joint sexxlength distribution
+# partition codes:  (0=combined; 
+#                    1=discard; 
+#                    2=retained
+#---------------------------------------------------------------------------------
+# Arreglo de datos
+new_lencomp <- data.frame(Yr = "# -9999", 
+                          Seas = 0, 
+                          FltSvy = 0, 
+                          Gender = 0, 
+                          Part = 0, 
+                          Nsamp = 0)
 
-# separar por sexo !!!!!
-
-# Modificar con los datos propios
-new_lencomp_flt_1 <- data.frame(Yr = 2002:2021, 
-                                Seas = 7, 
-                                FltSvy = -1, 
-                                Gender = 3, 
-                                Part = 0, 
-                                Nsamp = 125)
-
-new_lencomp_flt_2 <- data.frame(Yr = seq(2002, 2021, by = 3), 
-                                Seas = 7, 
-                                FltSvy = -2, 
-                                Gender = 3, 
-                                Part = 0, 
-                                Nsamp = 125)
-
-dat_rows_names <- colnames(dat$lencomp)[-(1:6)]
-dat_rows <- as.data.frame(matrix(data = 1, nrow = nrow(new_lencomp_flt_1)+nrow(new_lencomp_flt_2), 
-                   ncol = length(dat_rows_names)))
-names(dat_rows) <- dat_rows_names 
-
-
-new_lencomp <- rbind(new_lencomp_flt_1, new_lencomp_flt_2)
-new_lencomp <- cbind(new_lencomp, dat_rows)
-
-dat1$lencomp <- rbind(dat$lencomp, new_lencomp) #data.frame
+dat_rows_names <- paste("L",seq(20,70,2),sep="")
+dat_rows <- as.data.frame(matrix(data = 0, 
+                                 nrow = nrow(new_lencomp), 
+                                 ncol = length(dat_rows_names)))
+names(dat_rows)<-dat_rows_names 
+#---------------------------------------------------------------------------------
+# crear data.frame 
+new_lencomp1<-cbind(new_lencomp, dat_rows)
+#---------------------------------------------------------------------------------
+dat1$lencomp<-new_lencomp1 
+dat1$lencomp
+#---------------------------------------------------------------------------------
 ```
-
-En este modelo de 2 sexos, los datos de composición de tallas se introducen para las hembras, con 1 número por intervalo de tallas especificado previamente, seguido de los datos de composición de tallas para los machos, también con 1 número por intervalo de tallas.
 
 
 \newpage
 
-#### Matriz de número de individuos por edad/año de las capturas (Miles de individuos)
+### Composición de edad Formato `a4a`
+
+Matriz de número de individuos por edad/año de las capturas (Miles de individuos)
 \quad
 ```{r}
 dir(dir_GSA1)[2]
-  CATNUM.DAT <- read.table(paste(dir_GSA1,dir(dir_GSA1)[2],sep="/"),
+  CATNUM.DAT<-read.table(paste(dir_GSA1,dir(dir_GSA1)[2],sep="/"),
                            sep="",na="NA",fill=T,skip = 5)
   CATNUM.DAT 
-  
 ```
 
-### Composiciones de edad
-
-
+### Composición de edad Formato `SS3`
 A continuación se presentan los datos de composición por edad. En primer lugar, se establecen las categorías de edad y las definiciones de error de edad.
 
 [Consulte la Guía de usuario de SS3: Sección 7.16 "Age Composition Option"](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#age-composition-option).
 
-
-
-Datos de error edad
+#### Bins de edad
+\quad
 ```{r}
-# datos de modelo simple
-dat$ageerror
-
-# Modificar con los datos propios
-dat1$ageerror <- dat$ageerror #data.frame
+dat1$N_agebins<-6 
+dat1$N_agebins
+dat1$agebin_vector<-seq(0,5,1)
+dat1$agebin_vector
 ```
 
-Especificaciones de los datos de composicion de edad
+#### Datos de error edad
+\quad
 ```{r}
-# datos de modelo simple
-dat$age_info
-
-# Modificar con los datos propios
-age_info1<-data.frame(mintailcomp=dat$age_info$mintailcomp,
-                      addtocomp=dat$age_info$addtocomp,
-                      combine_M_F=dat$age_info$combine_M_F,
-                      CompressBins=dat$age_info$CompressBins,
-                      CompError=dat$age_info$CompError,
-                      ParmSelect=dat$age_info$ParmSelect,
-                      minsamplesize=dat$age_info$minsamplesize)
-
-row.names(age_info1)<-c("FISHERY", "SURVEY1", "SURVEY2")
-
-dat1$age_info <- age_info1 #data.frame
+# Arreglo de datos
+matrix_ageerror<-rbind(rep(-1,26),rep(0.001,26))
+#---------------------------------------------------------
+dat1$N_ageerror_definitions<-1   #_N_ageerror_definitions
+dat1$N_ageerror_definitions
+dat1$ageerror<-matrix_ageerror #_ageerror_definitions
+dat1$ageerror
 ```
 
-Datos de composicion de edad
+#### Especificaciones de los datos de composicion de edad
+\quad
 ```{r}
-# Modificar con los datos propios
-new_agecomp_flt_1 <- data.frame(Yr=2002:2021, 
+#------------------------------------------------------------------------------------------
+#_mintailcomp:  upper and lower distribution for females and males separately are 
+#               accumulated until exceeding this level.
+#_addtocomp:    after accumulation of tails; this value added to all bins
+#_combM+F:      males and females treated as combined gender below this bin number 
+#_compressbins: accumulate upper tail by this number of bins; acts simultaneous 
+#               with mintailcomp; set=0 for no forced accumulation
+#_Comp_Error:   0=multinomial, 
+#               1=dirichlet using Theta*n, 
+#               2=dirichlet using beta, 
+#               3=MV_Tweedie
+#_ParmSelect:   consecutive index for dirichlet or MV_Tweedie
+#_minsamplesize: minimum sample size; set to 1 to match 3.24, minimum value is 0.001
+#
+#_mintailcomp addtocomp combM+F CompressBins CompError ParmSelect minsamplesize
+#------------------------------------------------------------------------------------------
+# crear data.frame 
+age_info1<-data.frame(mintailcomp=rep(-1,4),
+                      addtocomp=rep(0.001,4),
+                      combine_M_F=rep(0,4),
+                      CompressBins=rep(0,4),
+                      CompError=rep(0,4),
+                      ParmSelect=rep(0,4),
+                      minsamplesize=rep(1,4))
+
+row.names(age_info1)<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")
+#---------------------------------------------------------------------------------
+dat1$age_info<-age_info1 
+dat1$age_info
+#---------------------------------------------------------------------------------
+```
+
+#### Datos de composicion de edad
+\quad
+```{r}
+#------------------------------------------------------------------------------------------
+dat1$Lbin_method <- 1 #_Lbin_method_for_Age_Data: 1=poplenbins; 2=datalenbins; 3=lengths
+#------------------------------------------------------------------------------------------
+# sex codes:  0=combined; 
+#             1=use female only; 
+#             2=use male only; 
+#             3=use both as joint sexxlength distribution
+# partition codes:  (0=combined; 
+#                    1=discard; 
+#                    2=retained
+#_yr month fleet sex part ageerr Lbin_lo Lbin_hi Nsamp datavector(female-male)
+#------------------------------------------------------------------------------------------
+# Arreglo de datos
+new_agecomp<-data.frame(Yr=2003:2021, 
                                 Seas=7, 
                                 FltSvy=-1, 
                                 Gender=3, 
@@ -509,73 +636,701 @@ new_agecomp_flt_1 <- data.frame(Yr=2002:2021,
                                 Lbin_hi=-1, 
                                 Nsamp=75)
 
-new_agecomp_flt_2 <- data.frame(Yr=seq(2002, 2021, by = 3), 
-                                Seas=7, 
-                                FltSvy=-2, 
-                                Gender=3, 
-                                Part=0, 
-                                Ageerr=2,
-                                Lbin_lo=-1, 
-                                Lbin_hi=-1, 
-                                Nsamp=75)
 
-dat_rows_names <- colnames(dat$agecomp)[-(1:9)]
+dat_rows_names<-paste("E",seq(0,5,1),sep="")
 
-dat_rows <- as.data.frame(matrix(data = 1, nrow = nrow(new_agecomp_flt_1)+nrow(new_agecomp_flt_2), 
-                                 ncol = length(dat_rows_names)))
+#dat_rows<-as.data.frame(matrix(data = CATNUM.DAT, 
+ #                              nrow = nrow(new_agecomp),
+ #                              ncol = length(dat_rows_names)))
 
-names(dat_rows) <- dat_rows_names 
+names(CATNUM.DAT)<-dat_rows_names 
 
-new_agecomp  <- rbind(new_agecomp_flt_1, new_agecomp_flt_2)
-new_agecomp  <- cbind(new_agecomp, dat_rows)
-dat1$agecomp <- rbind(dat$agecomp, new_agecomp) #data.frame
+new_agecomp<-cbind(new_agecomp, CATNUM.DAT)
+#---------------------------------------------------------------------------------
+dat1$agecomp<-new_agecomp
+dat1$agecomp
+#---------------------------------------------------------------------------------
 ``` 
 
+\newpage
 
-Otros datos
+### Otros datos
+
+#### Tallas medias a la edad
+\quad
 ```{r}
-# Modificar con los datos propios
-dat1$use_MeanSize_at_Age_obs <- 1 #numeric
+#---------------------------------------------------------------------------------
+dat1$use_MeanSize_at_Age_obs <- 0 #_Use_MeanSize-at-Age_obs (0/1)
+dat1$use_MeanSize_at_Age_obs
+#---------------------------------------------------------------------------------
+# sex codes:  0=combined; 
+#             1=use female only; 
+#             2=use male only; 
+#             3=use both as joint sexxlength distribution
+# partition codes:  (0=combined; 
+#                    1=discard; 
+#                    2=retained
+# ageerr codes:  positive means mean length-at-age; negative means mean bodywt_at_age
+#_yr month fleet sex part ageerr ignore datavector(female-male)
+#                                          samplesize(female-male)
+#---------------------------------------------------------------------------------
+# Arreglo de datos
+MeanSize_at_Age_obs_esp<-data.frame(Yr="# -9999",
+                                    Seas=0,
+                                    FltSvy=0,
+                                    Gender=0,
+                                    Part=0,
+                                    AgeErr=0,
+                                    Ignore=0)
 
-MeanSize_at_Age_obs_esp<-data.frame(Yr=dat$MeanSize_at_Age_obs$Yr,
-                                    Seas=dat$MeanSize_at_Age_obs$Seas,
-                                    FltSvy=dat$MeanSize_at_Age_obs$FltSvy,
-                                    Gender=dat$MeanSize_at_Age_obs$Gender,
-                                    Part=dat$MeanSize_at_Age_obs$Part,
-                                    AgeErr=dat$MeanSize_at_Age_obs$AgeErr,
-                                    Ignore=dat$MeanSize_at_Age_obs$Ignore)
-
-MeanSize_at_Age_obs_f   <-dat$MeanSize_at_Age_obs[,8:24]
-MeanSize_at_Age_obs_m   <-dat$MeanSize_at_Age_obs[,25:41]
-MeanSize_at_Age_obs_N_f <-dat$MeanSize_at_Age_obs[,42:58]
-
-dat_rows_names <-c(colnames(MeanSize_at_Age_obs_esp),colnames(dat$MeanSize_at_Age_obs[1,8:58]))
-
-MeanSize_at_Age_obs1 <-cbind(MeanSize_at_Age_obs_esp,
-                              MeanSize_at_Age_obs_f,
-                              MeanSize_at_Age_obs_m,
-                              MeanSize_at_Age_obs_N_f)
-
-names(MeanSize_at_Age_obs1) <-dat_rows_names 
-
-dat1$MeanSize_at_Age_obs<-MeanSize_at_Age_obs1 #data.frame
+dat_rows_names <- c(paste("L",seq(0,5,1),sep=""),paste("nmL",seq(0,5,1),sep="")) # los datos de esta matriz son las tallas medias por edad y tamaño de muestra...corregir!!!!
+dat_rows <- as.data.frame(matrix(data = 0, 
+                                 nrow = nrow(MeanSize_at_Age_obs_esp), 
+                                 ncol = length(dat_rows_names)))
+names(dat_rows)<-dat_rows_names 
+#---------------------------------------------------------------------------------
+# crear data.frame 
+MeanSize_at_Age_obs1 <-cbind(MeanSize_at_Age_obs_esp, dat_rows)
+#---------------------------------------------------------------------------------
+dat1$MeanSize_at_Age_obs<-MeanSize_at_Age_obs1 
+dat1$MeanSize_at_Age_obs
+#---------------------------------------------------------------------------------
 ```
 
+#### Datos ambientales 
+\quad
+(tarea = buscar ejemplo donde ingresen estos datos)
 ```{r}
-# Modificar con los datos propios
-dat1$N_environ_variables    <-0 #numeric
-dat1$N_sizefreq_methods     <-0 #numeric
-dat1$do_tags                <-0 #numeric
-dat1$morphcomp_data         <-0 #numeric
-dat1$use_selectivity_priors <-0 #numeric
-dat1$eof                    <-TRUE #logical
+dat1$N_environ_variables<-0 #_N_environ_variables
+dat1$N_environ_variables
+# -2 in yr will subtract mean for that env_var; 
+# -1 will subtract mean and divide by stddev (e.g. Z-score)
+#Yr Variable Value
+#
+```
+
+#### Sizefreq data 
+\quad
+(tarea = buscar ejemplo donde ingresen estos datos)
+```{r}
+# Sizefreq data. Defined by method because a fleet can use multiple methods
+dat1$N_sizefreq_methods<-0 # N sizefreq methods to read (or -1 for expanded options)
+dat1$N_sizefreq_methods
+```
+
+#### Datos de tags
+\quad
+(tarea = buscar ejemplo donde ingresen estos datos)
+```{r}
+dat1$do_tags<-0 # do tags (0/1/2); where 2 allows entry of TG_min_recap
+dat1$do_tags
+```
+
+#### Datos de morfos 
+\quad
+(tarea = buscar ejemplo donde ingresen estos datos)
+```{r}
+dat1$morphcomp_data<-0 #    morphcomp data(0/1) 
+dat1$morphcomp_data
+#  Nobs, Nmorphs, mincomp
+#  yr, seas, type, partition, Nsamp, datavector_by_Nmorphs
+#
+```
+
+##### Priors de selectividad
+\quad
+(tarea = buscar ejemplo donde ingresen estos datos)
+```{r}
+dat1$use_selectivity_priors<-0 #  Do dataread for selectivity priors(0/1)
+dat1$use_selectivity_priors
+# Yr, Seas, Fleet,  Age/Size,  Bin,  selex_prior,  prior_sd
+# feature not yet implemented
+#
+```
+
+#### Final de archivo data.ss
+\quad
+imprime línea final
+```{r}
+dat1$eof<-TRUE 
+dat1$eof
 ```
 
 \newpage
-# Escribir archivo dat modificado con la función  `SS_write`
-```{r eval=F}
+
+###  Escribir archivo de datos modificado con la función  `SS_write` para el enfoque de modelación `SS3`
+```{r eval=T}
 r4ss::SS_writedat(dat1,outfile=here(dirname.simple_mod,"data.ss"),overwrite = TRUE)
 ```
+
+\newpage
+
+##  Archivo control.ss
+
+Revisamos los nombres de los componentes de la lista del archivo .dat
+```{r}
+
+ctl <- r4ss::SS_readctl(here(dirname.base,"control.ss"),
+                        verbose = FALSE,
+                        use_datlist = TRUE,
+                        datlist = dat) #base
+ctl1<-ctl # para modificar
+#names(ctl1) # muestra los objetos de la lista
+```
+
+###  Especificaciones iniciales
+```{r}
+
+ctl1$nseas<-1
+ctl1$N_areas<-1
+ctl1$Nages<-40
+ctl1$Nsexes<-2
+ctl1$Npopbins<-43
+ctl1$Nfleets<-3
+ctl1$Do_AgeKey<-0
+```
+
+### Datos de los archivos
+```{r}
+ctl1$fleetnames <- c("FISHERY", "SURVEY1", "SURVEY2")
+ctl1$eof<-TRUE
+```
+
+### Especificaciones del crecimiento
+```{r}
+ctl1$EmpiricalWAA<-0  # 0 means do not read wtatage.ss; 
+                       # 1 means read and use wtatage.ss and also read and use growth parameters
+ctl1$N_GP<-1          #_N_Growth_Patterns (Growth Patterns, Morphs, Bio Patterns, GP are terms used interchangeably in SS3)
+ctl1$N_platoon<-1     #_N_platoons_Within_GrowthPattern 
+```
+
+### Distribución del reclutamiento
+```{r}
+ctl$recr_dist_method # recr_dist_method for parameters:  2=main effects for GP, Area, Settle timing; 3=each Settle entity; 4=none (only when N_GP*Nsettle*pop==1)
+ctl$recr_global_area # not yet implemented; Future usage: Spawner-Recruitment: 1=global; 2=by area
+ctl$recr_dist_read #  number of recruitment settlement assignments 
+ctl$recr_dist_inx  # unused option
+ctl$recr_dist_pattern #GPattern month  area  age (for each settlement assignment)
+#-----------------------------------------------------------------------------------------
+#
+#_Cond 0 # N_movement_definitions goes here if Nareas > 1
+#_Cond 1.0 # first age that moves (real age at begin of season, not integer) also cond on do_migration>0
+#_Cond 1 1 1 2 4 10 # example move definition for seas=1, morph=1, source=1 dest=2, age1=4, age2=10
+#
+#-----------------------------------------------------------------------------------------
+```
+
+### Bloques
+```{r}
+ctl$N_Block_Designs #_Nblock_Patterns
+ctl$blocks_per_pattern #_blocks_per_pattern 
+ctl$Block_Design # begin and end years of blocks
+```
+
+### Tiempo variable
+```{r}
+#--------------------------------------------------------------------------------------
+#
+# controls for all timevary parameters 
+ctl$time_vary_adjust_method #_time-vary parm bound check (
+                            # 1=warn relative to base parm bounds; 
+                            # 3=no bound check); 
+                            # Also see env (3) and dev (5) options to constrain with base bounds
+#--------------------------------------------------------------------------------------
+#
+# AUTOGEN
+ctl$time_vary_auto_generation # autogen: 1st element for biology, 
+                              #          2nd for SR, 
+                              #          3rd for Q, 
+                              #          4th reserved, 
+                              #          5th for selex
+# where: 0 = autogen time-varying parms of this category; 
+#        1 = read each time-varying parm line; 
+#        2 = read then autogen if parm min==-12345
+#
+#--------------------------------------------------------------------------------------
+#_Available timevary codes
+#_Block types: 
+             # 0: P_block=P_base*exp(TVP); 
+             # 1: P_block=P_base+TVP; 
+             # 2: P_block=TVP; 
+             # 3: P_block=P_block(-1) + TVP
+
+#_Block_trends: 
+             # -1: trend bounded by base parm min-max and parms in transformed units (beware); 
+             # -2: endtrend and infl_year direct values; 
+             # -3: end and infl as fraction of base range
+
+#_EnvLinks:  
+             # 1: P(y)=P_base*exp(TVP*env(y));  
+             # 2: P(y)=P_base+TVP*env(y);  
+             # 3: P(y)=f(TVP,env_Zscore) w/ logit to stay in min-max;  
+             # 4: P(y)=2.0/(1.0+exp(-TVP1*env(y) - TVP2))
+
+#_DevLinks:  
+             # 1: P(y)*=exp(dev(y)*dev_se;  
+             # 2: P(y)+=dev(y)*dev_se;  
+             # 3: random walk;  
+             # 4: zero-reverting random walk with rho;  
+             # 5: like 4 with logit transform to stay in base min-max
+
+#_DevLinks(more):  
+             # 21-25 keep last dev for rest of years
+#
+#_Prior_codes:  
+             # 0=none; 
+             # 6=normal; 
+             # 1=symmetric beta; 
+             # 2=CASAL's beta; 
+             # 3=lognormal; 
+             # 4=lognormal with biascorr; 
+             # 5=gamma
+#
+```
+
+### Parámetros biológicos
+
+```{r}
+# setup for M, growth, wt-len, maturity, fecundity, (hermaphro), recr_distr, cohort_grow, (movement), (age error), (catch_mult), sex ratio 
+#_NATMORT
+ctl$natM_type #_natM_type:_0=1Parm;
+              #           _1=N_breakpoints;
+              #           _2=Lorenzen;
+              #           _3=agespecific;
+              #           _4=agespec_withseasinterpolate;
+              #           _5=BETA:_Maunder_link_to_maturity;
+              #           _6=Lorenzen_range
+#_no additional input for selected M option; read 1P per morph
+#
+ctl$GrowthModel # GrowthModel: 1=vonBert with L1&L2; 2=Richards with L1&L2; 3=age_specific_K_incr; 4=age_specific_K_decr; 5=age_specific_K_each; 6=NA; 7=NA; 8=growth cessation
+
+ctl$Growth_Age_for_L1 #_Age(post-settlement)_for_L1;linear growth below this
+ctl$Growth_Age_for_L2 #_Growth_Age_for_L2 (999 to use as Linf)
+ctl$Exp_Decay #_exponential decay for growth above maxage (value should approx initial Z; -999 replicates 3.24; -998 to not allow growth above maxage)
+
+ctl$Growth_Placeholder #_placeholder for future growth feature
+ctl$SD_add_to_LAA #_SD_add_to_LAA (set to 0.1 for SS2 V1.x compatibility)
+ctl$CV_Growth_Pattern #_CV_Growth_Pattern:  0 CV=f(LAA); 1 CV=F(A); 2 SD=F(LAA); 3 SD=F(A); 4 logSD=F(A)
+#
+ctl$maturity_option #_maturity_option:  1=length logistic; 2=age logistic; 3=read age-maturity matrix by growth_pattern; 4=read age-fecundity; 5=disabled; 6=read length-maturity
+
+ctl$First_Mature_Age #_First_Mature_Age
+ctl$fecundity_option #_fecundity_at_length option:(1)eggs=Wt*(a+b*Wt);(2)eggs=a*L^b;(3)eggs=a*Wt^b; (4)eggs=a+b*L; (5)eggs=a+b*W
+
+ctl$hermaphroditism_option #_hermaphroditism option:  0=none; 1=female-to-male age-specific fxn; -1=male-to-female age-specific fxn
+
+ctl$parameter_offset_approach #_parameter_offset_approach for M, G, CV_G:  1- direct, no offset**; 2- male=fem_parm*exp(male_parm); 3: male=female*exp(parm) then old=young*exp(parm)
+
+#_** in option 1, any male parameter with value = 0.0 and phase <0 is set equal to female parameter
+#
+
+```
+
+### Parámetros biológicos
+
+```{r}
+#_growth_parms
+#_ LO HI INIT PRIOR PR_SD PR_type PHASE env_var&link dev_link dev_minyr dev_maxyr dev_PH Block Block_Fxn
+# Sex: 1  BioPattern: 1  NatMort
+ctl$MG_parms
+```
+
+```{r}
+row.names(ctl$MG_parms)
+```
+
+```{r}
+names(ctl$MG_parms)
+```
+
+
+#### Parámetros hembras
+
+##### Mortalidad natural Fem GP_1
+```{r}
+ctl$MG_parms[1,] # NatM_uniform_Fem_GP_1
+```
+
+##### longitud a la edad Fem GP_1
+```{r}
+# Sex: 1  BioPattern: 1  Growth
+ctl$MG_parms[2,] # L_at_Amin_Fem_GP_1
+ctl$MG_parms[3,] # L_at_Amax_Fem_GP_1
+```
+
+##### Tasa de crecimiento Fem GP_1
+```{r}
+ctl$MG_parms[4,] # VonBert_K_Fem_GP_1
+```
+
+##### CV crecimiento Fem GP_1
+```{r}
+ctl$MG_parms[5,] # CV_young_Fem_GP_1
+ctl$MG_parms[6,] # CV_old_Fem_GP_1
+```
+
+##### Relación longitud-peso Fem GP_1
+```{r}
+# Sex: 1  BioPattern: 1  WtLen
+ctl$MG_parms[7,] # Wtlen_1_Fem_GP_1
+ctl$MG_parms[8,] # Wtlen_2_Fem_GP_1
+```
+
+##### Relación Madurez Fem GP_1
+```{r}
+# Sex: 1  BioPattern: 1  Maturity&Fecundity
+ctl$MG_parms[9,]   # Mat50%_Fem_GP_1
+ctl$MG_parms[10,]  # Mat_slope_Fem_GP_1
+```
+
+##### Eggs/kg Fem GP_1
+```{r}
+ctl$MG_parms[11,] # Eggs/kg_inter_Fem_GP_1
+ctl$MG_parms[12,] # Eggs/kg_slope_wt_Fem_GP_1
+```
+
+#### Parámetros Machos
+##### Mortalidad natural Mal GP_1
+```{r}
+# Sex: 2  BioPattern: 1  NatMort
+ctl$MG_parms[13,] # NatM_uniform_Mal_GP_1
+```
+
+##### longitud a la edad  Mal GP_1
+```{r}
+# Sex: 2  BioPattern: 1  Growth
+ctl$MG_parms[14,] # L_at_Amin_Mal_GP_1
+ctl$MG_parms[15,] # L_at_Amax_Mal_GP_1
+```
+
+##### Tasa de crecimiento Mal GP_1
+```{r}
+ctl$MG_parms[16,] # VonBert_K_Mal_GP_1
+```
+
+##### CV crecimiento Mal GP_1
+```{r}
+ctl$MG_parms[17,] # CV_young_Mal_GP_1
+ctl$MG_parms[18,] # CV_old_Mal_GP_1
+```
+
+##### Relación longitud-peso Mal GP_1
+```{r}
+# Sex: 2  BioPattern: 1  WtLen
+ctl$MG_parms[19,] # Wtlen_1_Mal_GP_1
+ctl$MG_parms[20,] # Wtlen_2_Mal_GP_1
+```
+
+##### Hermaphroditism
+Revisar como se ingresa esta información, en ejemplo simple no se utiliza
+```{r}
+# Hermaphroditism
+```
+
+##### Distribución del reclutamiento
+```{r}
+#  Recruitment Distribution 
+ctl$MG_parms[21,]  # RecrDist_GP_1
+ctl$MG_parms[22,]  # RecrDist_Area_1
+ctl$MG_parms[23,]  # RecrDist_month_1
+```
+
+##### Cohort growth dev base
+```{r}
+#  Cohort growth dev base
+ctl$MG_parms[24,]  # CohortGrowDev
+```
+
+Revisar como se ingresa esta información, en ejemplo simple no se utiliza
+```{r}
+#  Movement
+#  Age Error from parameters
+#  catch multiplier
+```
+
+#####  fraction female, by GP
+```{r}
+#  fraction female, by GP
+ctl$MG_parms[25,] # FracFemale_GP_1
+```
+
+#####  M2 parameter for each predator fleet
+Revisar como se ingresa esta información, en ejemplo simple no se utiliza
+```{r}
+#  M2 parameter for each predator fleet
+#
+```
+
+#####_no timevary MG parameters
+Revisar como se ingresa esta información, en ejemplo simple no se utiliza
+```{r}
+#_no timevary MG parameters
+#
+```
+
+#####_seasonal_effects_on_biology_parms
+```{r}
+ctl$MGparm_seas_effects #_femwtlen1,femwtlen2,mat1,mat2,fec1,fec2,Malewtlen1,malewtlen2,L1,K
+#_ LO HI INIT PRIOR PR_SD PR_type PHASE
+#_Cond -2 2 0 0 -1 99 -2 #_placeholder when no seasonal MG parameters
+#
+```
+
+
+### Relación stock recluta
+```{r}
+ctl$SR_function #_Spawner-Recruitment; Options: 
+                                      # 1=NA; 
+                                      # 2=Ricker; 
+                                      # 3=std_B-H; 
+                                      # 4=SCAA; 
+                                      # 5=Hockey; 
+                                      # 6=B-H_flattop; 
+                                      # 7=survival_3Parm; 
+                                      # 8=Shepherd_3Parm; 
+                                      # 9=RickerPower_3parm
+
+ctl$Use_steep_init_equi # # 0/1 to use steepness in initial equ recruitment calculation
+ctl$Sigma_R_FofCurvature  #  future feature:  0/1 to make realized sigmaR a function of SR curvature
+#--------------------------------------------------------------------------------------------
+#_          LO            HI          INIT         PRIOR         PR_SD       PR_type      PHASE    env-var    use_dev   dev_mnyr   dev_mxyr     dev_PH      Block    Blk_Fxn #  parm_name
+names(ctl$SR_parms)
+row.names(ctl$SR_parms)
+ctl$SR_parms[1,] 
+ctl$SR_parms[2,] 
+ctl$SR_parms[3,] 
+ctl$SR_parms[4,] 
+ctl$SR_parms[5,] 
+#--------------------------------------------------------------------------------------------
+
+```
+
+
+### Desvíos de los reclutamientos
+```{r}
+#_no timevary SR parameters
+ctl$do_recdev #do_recdev:  0=none; 1=devvector (R=F(SSB)+dev); 2=deviations (R=F(SSB)+dev); 3=deviations (R=R0*dev; dev2=R-f(SSB)); 4=like 3 with sum(dev2) adding penalty
+
+ctl$MainRdevYrFirst # first year of main recr_devs; early devs can preceed this era
+ctl$MainRdevYrLast # last year of main recr_devs; forecast devs start in following year
+ctl$recdev_phase #_recdev phase 
+ctl$recdev_adv   # (0/1) to read 13 advanced options
+ctl$recdev_early_start #_recdev_early_start (0=none; neg value makes relative to recdev_start)
+ctl$recdev_early_phase #_recdev_early_phase
+ctl$Fcast_recr_phase #_forecast_recruitment phase (incl. late recr) (0 value resets to maxphase+1)
+```
+
+#### Sesgo
+```{r}
+ctl$lambda4Fcast_recr_like #_lambda for Fcast_recr_like occurring before endyr+1
+ctl$last_early_yr_nobias_adj #_last_yr_nobias_adj_in_MPD; begin of ramp
+ctl$first_yr_fullbias_adj #_first_yr_fullbias_adj_in_MPD; begin of plateau
+ctl$last_yr_fullbias_adj #_last_yr_fullbias_adj_in_MPD
+ctl$first_recent_yr_nobias_adj #_end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS3 sets bias_adj to 0.0 for fcast yrs)
+
+ctl$max_bias_adj  #_max_bias_adj_in_MPD (typical ~0.8; -3 sets all years to 0.0; -2 sets all non-forecast yrs w/ estimated recdevs to 1.0; -1 sets biasadj=1.0 for all yrs w/ recdevs)
+ 
+```
+
+#### Desvíos
+```{r}
+ctl$period_of_cycles_in_recr #_period of cycles in recruitment (N parms read below)
+ctl$min_rec_dev #min rec_dev
+ctl$max_rec_dev #max rec_dev
+ctl$N_Read_recdevs #_read_recdevs
+#_end of advanced SR options
+#
+#_placeholder for full parameter lines for recruitment cycles
+# read specified recr devs
+#_Yr Input_value
+#
+# all recruitment deviations
+#  1971R 1972R 1973R 1974R 1975R 1976R 1977R 1978R 1979R 1980R 1981R 1982R 1983R 1984R 1985R 1986R 1987R 1988R 1989R 1990R 1991R 1992R 1993R 1994R 1995R 1996R 1997R 1998R 1999R 2000R 2001R 2002F 2003F 2004F 2005F 2006F 2007F 2008F 2009F 2010F 2011F
+#  0.1268 -0.0629442 0.0998014 -0.174095 0.0306484 0.714818 -0.0228752 0.00379775 0.261267 0.173626 0.0900049 -0.226622 -0.439888 -0.312088 0.393112 0.551725 0.21891 0.154932 -0.384786 0.596744 -0.682432 -0.273424 -0.829665 0.365024 -0.605267 0.455103 1.11072 -0.546499 -0.656469 0.171606 -0.301581 0 0 0 0 0 0 0 0 0 0
+#
+```
+
+### Mortalidad por pesca
+
+```{r}
+#Fishing Mortality info 
+ctl$F_ballpark # F ballpark value in units of annual_F
+ctl$F_ballpark_year # F ballpark year (neg value to disable)
+
+ctl$F_Method # F_Method:  1=Pope midseason rate; 2=F as parameter; 3=F as hybrid; 4=fleet-specific parm/hybrid (#4 is superset of #2 and #3 and is recommended)
+
+ctl$maxF # max F (methods 2-4) or harvest fraction (method 1)
+
+ctl$F_iter # N iterations for tuning in hybrid mode; recommend 3 (faster) to 5 (more precise if many fleets)
+#
+#_initial_F_parms; for each fleet x season that has init_catch; nest season in fleet; count = 0
+#_for unconstrained init_F, use an arbitrary initial catch and set lambda=0 for its logL
+#_ LO HI INIT PRIOR PR_SD  PR_type  PHASE
+#
+# F rates by fleet x season
+# Yr:  1971 1972 1973 1974 1975 1976 1977 1978 1979 1980 1981 1982 1983 1984 1985 1986 1987 1988 1989 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011
+# seas:  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+# FISHERY 0 0.00211081 0.010609 0.0107037 0.0217063 0.0333334 0.0459509 0.0599453 0.0757167 0.107737 0.146876 0.162531 0.180868 0.202893 0.230365 0.266192 0.314644 0.338215 0.354481 0.356016 0.338877 0.238035 0.242891 0.250688 0.26355 0.283377 0.227156 0.238194 0.247552 0.252337 0.253174 0.0129829 0.0279253 0.038022 0.0447387 0.0493313 0.0527091 0.0554663 0.0579281 0.0602317 0.0624094
+#
+```
+
+### Capturabilidad
+
+#### Opciones de capturabilidad
+```{r}
+#_Q_setup for fleets with cpue or survey data
+#_1:  fleet number
+#_2:  link type: (1=simple q, 1 parm; 2=mirror simple q, 1 mirrored parm; 3=q and power, 2 parm; 4=mirror with offset, 2 parm)
+#_3:  extra input for link, i.e. mirror fleet# or dev index number
+#_4:  0/1 to select extra sd parameter
+#_5:  0/1 for biasadj or not
+#_6:  0/1 to float
+#_   fleet      link link_info  extra_se   biasadj     float  #  fleetname
+ctl$Q_options
+```
+
+#### Parámetros
+```{r}
+#_Q_parms(if_any);Qunits_are_ln(q)
+#_          LO            HI          INIT         PRIOR         PR_SD       PR_type      PHASE    env-var    use_dev   dev_mnyr   dev_mxyr     dev_PH      Block    Blk_Fxn  #  parm_name
+ctl$Q_parms
+#_no timevary Q parameters
+#
+```
+
+### Selectividad
+
+#### tipos de patrones de selectividad a la talla
+```{r}
+#_size_selex_patterns
+#Pattern:_0;  parm=0; selex=1.0 for all sizes
+#Pattern:_1;  parm=2; logistic; with 95% width specification
+#Pattern:_5;  parm=2; mirror another size selex; PARMS pick the min-max bin to mirror
+#Pattern:_11; parm=2; selex=1.0  for specified min-max population length bin range
+#Pattern:_15; parm=0; mirror another age or length selex
+#Pattern:_6;  parm=2+special; non-parm len selex
+#Pattern:_43; parm=2+special+2;  like 6, with 2 additional param for scaling (average over bin range)
+#Pattern:_8;  parm=8; double_logistic with smooth transitions and constant above Linf option
+#Pattern:_9;  parm=6; simple 4-parm double logistic with starting length; parm 5 is first length; parm 6=1 does desc as offset
+#Pattern:_21; parm=2+special; non-parm len selex, read as pairs of size, then selex
+#Pattern:_22; parm=4; double_normal as in CASAL
+#Pattern:_23; parm=6; double_normal where final value is directly equal to sp(6) so can be >1.0
+#Pattern:_24; parm=6; double_normal with sel(minL) and sel(maxL), using joiners
+#Pattern:_2;  parm=6; double_normal with sel(minL) and sel(maxL), using joiners, back compatibile version of 24 with 3.30.18 and older
+#Pattern:_25; parm=3; exponential-logistic in length
+#Pattern:_27; parm=special+3; cubic spline in length; parm1==1 resets knots; parm1==2 resets all 
+#Pattern:_42; parm=special+3+2; cubic spline; like 27, with 2 additional param for scaling (average over bin range)
+#_discard_options:_0=none;_1=define_retention;_2=retention&mortality;_3=all_discarded_dead;_4=define_dome-shaped_retention
+#_Pattern Discard Male Special
+ctl$size_selex_types
+```
+
+#### tipos de patrones de selectividad a la edad
+```{r}
+#
+#_age_selex_patterns
+#Pattern:_0; parm=0; selex=1.0 for ages 0 to maxage
+#Pattern:_10; parm=0; selex=1.0 for ages 1 to maxage
+#Pattern:_11; parm=2; selex=1.0  for specified min-max age
+#Pattern:_12; parm=2; age logistic
+#Pattern:_13; parm=8; age double logistic. Recommend using pattern 18 instead.
+#Pattern:_14; parm=nages+1; age empirical
+#Pattern:_15; parm=0; mirror another age or length selex
+#Pattern:_16; parm=2; Coleraine - Gaussian
+#Pattern:_17; parm=nages+1; empirical as random walk  N parameters to read can be overridden by setting special to non-zero
+#Pattern:_41; parm=2+nages+1; // like 17, with 2 additional param for scaling (average over bin range)
+#Pattern:_18; parm=8; double logistic - smooth transition
+#Pattern:_19; parm=6; simple 4-parm double logistic with starting age
+#Pattern:_20; parm=6; double_normal,using joiners
+#Pattern:_26; parm=3; exponential-logistic in age
+#Pattern:_27; parm=3+special; cubic spline in age; parm1==1 resets knots; parm1==2 resets all 
+#Pattern:_42; parm=2+special+3; // cubic spline; with 2 additional param for scaling (average over bin range)
+#Age patterns entered with value >100 create Min_selage from first digit and pattern from remainder
+#_Pattern Discard Male Special
+ctl$age_selex_types
+```
+
+#### parametros de selectividad a la talla
+
+```{r}
+#
+#_          LO            HI          INIT         PRIOR         PR_SD       PR_type      PHASE    env-var    use_dev   dev_mnyr   dev_mxyr     dev_PH      Block    Blk_Fxn  #  parm_name
+# 1   FISHERY LenSelex
+ctl$size_selex_parms
+```
+
+#### parametros de selectividad a la edad
+```{r}
+ctl$age_selex_parms
+```
+
+
+#### otros parámetros ??? REVISAR
+```{r}
+#_No_Dirichlet parameters
+#_no timevary selex parameters
+#
+ctl$Use_2D_AR1_selectivity  #  use 2D_AR1 selectivity(0/1)
+#_no 2D_AR1 selex offset used
+#
+#--------------------------------------------------
+# Tag loss and Tag reporting parameters go next
+ctl$TG_custom # TG_custom:  0=no read and autogen if tag data exist; 1=read
+#_Cond -6 6 1 1 2 0.01 -4 0 0 0 0 0 0 0  #_placeholder if no parameters
+#
+# no timevary parameters
+#
+#
+# Input variance adjustments factors: 
+ #_1=add_to_survey_CV
+ #_2=add_to_discard_stddev
+ #_3=add_to_bodywt_CV
+ #_4=mult_by_lencomp_N
+ #_5=mult_by_agecomp_N
+ #_6=mult_by_size-at-age_N
+ #_7=mult_by_generalized_sizecomp
+#_Factor  Fleet  Value
+ctl$DoVar_adjust
+ctl$maxlambdaphase #_maxlambdaphase
+ctl$sd_offset #_sd_offset; must be 1 if any growthCV, sigmaR, or survey extraSD is an estimated parameter
+```
+
+### Lambdas
+```{r}
+ctl$N_lambdas # read 3 changes to default Lambdas (default value is 1.0)
+# Like_comp codes:  1=surv; 2=disc; 3=mnwt; 4=length; 5=age; 6=SizeFreq; 7=sizeage; 8=catch; 9=init_equ_catch; 
+# 10=recrdev; 11=parm_prior; 12=parm_dev; 13=CrashPen; 14=Morphcomp; 15=Tag-comp; 16=Tag-negbin; 17=F_ballpark; 18=initEQregime
+#like_comp fleet  phase  value  sizefreq_method
+ctl$lambdas
+```
+
+**REVISAR ESTA PARTE**
+### more stddev reporting
+```{r}
+ctl$more_stddev_reporting # (0/1/2) read specs for more stddev reporting: 0 = skip, 1 = read specs for reporting stdev for selectivity, size, and numbers, 2 = add options for M,Dyn. Bzero, SmryBio
+
+```
+
+#### specs ?
+```{r}
+ctl$stddev_reporting_specs  # Selectivity: (1) 0 to skip or fleet, (2) 1=len/2=age/3=combined, (3) year, (4) N selex bins; NOTE: combined reports in age bins
+```
+
+#### Crecimiento
+```{r}
+ctl$stddev_reporting_growth # Growth: (1) 0 to skip or growth pattern, (2) growth ages; NOTE: does each sex
+```
+
+#### Abundancia a la edad
+```{r}
+ctl$stddev_reporting_N_at_A # Numbers-at-age: (1) 0 or area(-1 for all), (2) year, (3) N ages;  NOTE: sums across morphs
+```
+
+#### Selectividad
+```{r}
+ctl$stddev_reporting_selex # vector with selex std bins (-1 in first bin to self-generate)
+```
+
 
 
 \newpage
@@ -626,7 +1381,7 @@ dir(dir_GSA1)[10]
 
 \newpage
 
-### GSA6 (Levante-Norte de España).
+# GSA6 (Levante-Norte de España).
 
 \quad
 La conceptualización del modelo biológico de **GSA6** considera los siguientes componentes de la dinámica poblacional:
@@ -639,7 +1394,7 @@ La conceptualización del modelo biológico de **GSA6** considera los siguientes
  - otros...
 
 
-#### Descripción del modelo
+## Descripción del modelo
 \quad
 El modelo de evaluación de stock de **GSA6** se basa en un análisis estadístico de la dinámica de estructuras de edad anual que incorpora información biológica y pesquera. La información que ingresa al modelo consiste en ... 
 
@@ -648,7 +1403,7 @@ El modelo de evaluación de stock de **GSA6** se basa en un análisis estadísti
 
 \pagebreak
 
-#### Archivos utilizado para enfoque de modelación `a4a`
+## Archivos utilizado para enfoque de modelación `a4a`
 \quad
 ```{r}
 
