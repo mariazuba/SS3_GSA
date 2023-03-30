@@ -796,38 +796,73 @@ ctl1$fleetnames <- c("FISHERY", "SURVEY1", "SURVEY2")
 ctl1$eof<-TRUE
 ```
 
+
 ### Especificaciones del crecimiento
 ```{r}
-ctl1$EmpiricalWAA<-0  # 0 means do not read wtatage.ss; 
-                       # 1 means read and use wtatage.ss and also read and use growth parameters
-ctl1$N_GP<-1          #_N_Growth_Patterns (Growth Patterns, Morphs, Bio Patterns, GP are terms used interchangeably in SS3)
-ctl1$N_platoon<-1     #_N_platoons_Within_GrowthPattern 
+# EmpiricalWAA------------------------
+# 0 means do not read wtatage.ss; 
+# 1 means read and use wtatage.ss and 
+# also read and use growth parameters
+ctl1$EmpiricalWAA<-0 
+# N_GP-------------------------------
+#_N_Growth_Patterns (Growth Patterns,
+#                    Morphs, 
+#                    Bio Patterns,
+#                    GP 
+# are terms used interchangeably in SS3)
+ctl1$N_GP<-1
+#N_platoon---------------------------
+#_N_platoons_Within_GrowthPattern 
+ctl1$N_platoon<-1 
+
 ```
 
 ### Distribución del reclutamiento
 ```{r}
-ctl$recr_dist_method # recr_dist_method for parameters:  2=main effects for GP, Area, Settle timing; 3=each Settle entity; 4=none (only when N_GP*Nsettle*pop==1)
-ctl$recr_global_area # not yet implemented; Future usage: Spawner-Recruitment: 1=global; 2=by area
-ctl$recr_dist_read #  number of recruitment settlement assignments 
-ctl$recr_dist_inx  # unused option
-ctl$recr_dist_pattern #GPattern month  area  age (for each settlement assignment)
-#-----------------------------------------------------------------------------------------
-#
+# recr_dist_method for parameters:  
+# 2=main effects for GP, Area, Settle timing; 
+# 3=each Settle entity; 
+# 4=none (only when N_GP*Nsettle*pop==1)
+ctl1$recr_dist_method <-2 
+
+# not yet implemented; Future usage: Spawner-Recruitment: 
+# 1=global; 
+# 2=by area
+ctl1$recr_global_area <-1
+
+#  number of recruitment settlement assignments 
+ctl1$recr_dist_read <- 1
+
+# unused option
+ctl1$recr_dist_inx<-0
+
+# GPattern month  area  age (for each settlement assignment)
+ctl1$recr_dist_pattern #data.frame
+
 #_Cond 0 # N_movement_definitions goes here if Nareas > 1
-#_Cond 1.0 # first age that moves (real age at begin of season, not integer) also cond on do_migration>0
-#_Cond 1 1 1 2 4 10 # example move definition for seas=1, morph=1, source=1 dest=2, age1=4, age2=10
+
+#_Cond 1.0 # first age that moves (real age at begin of season, not integer) 
+           # also cond on do_migration>0
+
+#_Cond 1 1 1 2 4 10 # example move definition for 
+                    # seas=1, 
+                    # morph=1, 
+                    # source=1 
+                    # dest=2, 
+                    # age1=4, 
+                    # age2=10
 #
-#-----------------------------------------------------------------------------------------
+
 ```
 
 ### Bloques
 ```{r}
-ctl$N_Block_Designs #_Nblock_Patterns
-ctl$blocks_per_pattern #_blocks_per_pattern 
-ctl$Block_Design # begin and end years of blocks
+ctl$N_Block_Designs     #_Nblock_Patterns
+ctl$blocks_per_pattern  #_blocks_per_pattern 
+ctl$Block_Design        # begin and end years of blocks
 ```
 
-### Tiempo variable
+### Parámetros que varían en el tiempo
 ```{r}
 #--------------------------------------------------------------------------------------
 #
