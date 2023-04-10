@@ -21,8 +21,9 @@ knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.ali
 
 ```{r results='hide',include=FALSE}
 ## Librerías requeridas
- paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
-               "patchwork","dplyr","reshape","here","r4ss","tibble")
+ paquetes <- c("stringr", "tidyverse", "kableExtra",
+               "ggplot2","ggthemes","patchwork",
+               "dplyr","reshape","here","r4ss","tibble")
  lapply(paquetes, require, character.only = TRUE)
 ```
 
@@ -3503,10 +3504,10 @@ r4ss::SS_writeforecast(mylist = fore1,
 
 \newpage
 
-# Archivo watatege
+## Archivo watatege
 
 
-## Formato `a4a`
+### Formato `a4a`
 #### Peso medio por edad y año de tu matriz de captura (Kilos).
 \quad
 ```{r}
@@ -3573,7 +3574,7 @@ ggplot(ojivamadurez,aes(edad,prop))+
 
 \newpage
 
-## Formato `SS3`
+### Formato `SS3`
 
 ```{r eval=F}
 wtat <- r4ss::SS_read(here("empirical_wtatage_and_age_selex"),
