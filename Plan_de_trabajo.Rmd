@@ -21,7 +21,7 @@ knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.ali
 
 ```{r results='hide',include=FALSE}
 ## Librerías requeridas
- paquetes <- c("stringr", "tidyverse", "kableExtra",
+ paquetes <- c("stringr", "tidyverse", "kableExtra","readxl",
                "ggplot2","ggthemes","patchwork",
                "dplyr","reshape","here","r4ss","tibble")
  lapply(paquetes, require, character.only = TRUE)
@@ -301,23 +301,20 @@ dir(dir_GSA1)[12]
   TUNEFF.DAT<-read.table(paste(dir_GSA1,dir(dir_GSA1)[12],sep="/"),
                          sep="",na="NA",fill=T,skip = 6)
   TUNEFF.DAT
+
   
 ```
 
-```{r fig.height=6,fig.width=4}
+```{r fig.height=3,fig.width=4}
 
-names_ind<-c('index_1','index_2','index_3','Yr')
+names_ind<-c('index_1','Yr')
 
-indeexdat<-as.data.frame(TUNEFF.DAT[,2:4]) %>% 
-          mutate(Yr=2003:2021) %>%
-          magrittr::set_colnames(names_ind) %>%
-          melt(id.var='Yr')
+indeexdat<-data.frame(Yr=2003:2021,suma=rowSums(TUNEFF.DAT))
 
 ggplot()  +
-    geom_bar(data=indeexdat, aes(x=Yr, y =value), 
-             stat="identity", fill='gray66', color = 'gray28') + 
-    facet_wrap(~variable,scale="free",dir = 'v', as.table = TRUE) + 
-    labs(x="Años", y="Índices de abundancia") +  
+    geom_bar(data=indeexdat, aes(x=Yr, y =suma), 
+             stat="identity", fill='gray66', color = 'gray28') +  
+    labs(x="Años", y="Índice de abundancia") +  
     theme(panel.background = element_rect(fill ="gray99")) + 
     theme(panel.grid=element_line(color="gray66"))
 
@@ -343,12 +340,12 @@ Luego viene la especificación de los índices de abundancia.  Primero está la 
 #_Fleet Units Errtype SD_Report
 #---------------------------------------------------------------------------------
 # Arreglo de datos
-CPUEinfo_Fleet<-c(1,2,3,4)
-CPUEinfo_Units<-c(1,1,1,1) # unidades la dejamos en 1=biomass Revisar!!!
-CPUEinfo_Errtype<-c(0,0,0,0) # en general se trabaja lognormal
-CPUEinfo_SD_Report<-c(0,0,0,0) # esto se puede cambiar después si se necesita
+CPUEinfo_Fleet<-c(1,2)
+CPUEinfo_Units<-c(1,1) # unidades la dejamos en 1=biomass Revisar!!!
+CPUEinfo_Errtype<-c(0,0) # en general se trabaja lognormal
+CPUEinfo_SD_Report<-c(0,0) # esto se puede cambiar después si se necesita
                                # SD_Report, por ahora no es necesario...
-CPUEinfo_names<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")
+CPUEinfo_names<-c("FISHERY", "SURVEY1")
 #---------------------------------------------------------------------------------
 # crear data.frame 
 CPUEinfo1<-data.frame(Fleet=CPUEinfo_Fleet,
@@ -377,23 +374,15 @@ dat1$CPUEinfo
 #---------------------------------------------------------------------------------
 # Arreglo de datos
 yearf1<-2003:2021
-yearf2<-2003:2021
-yearf3<-2003:2021
-CPUE_year<-c(yearf1,yearf2,yearf3)
+CPUE_year<-c(yearf1)
 #CPUE_seas = fecha e las campañas, se asume 1 (enero), 
 #corregir por el mes correspondiente
 CPUE_seas<-rep(1,length(CPUE_year)) 
 # Los números de "CPUE_index" son los mismos números de "Fleet" 
 # que se especifican en "CPUEinfo"
-CPUE_index<-c(rep(2,length(yearf1)),
-              rep(3,length(yearf2)),
-              rep(4,length(yearf3))) 
-CPUE_obs<-c(TUNEFF.DAT$V2,
-            TUNEFF.DAT$V3,
-            TUNEFF.DAT$V4)  
-CPUE_se_log<-c(TUNEFF.DAT$V5,
-               TUNEFF.DAT$V6,
-               TUNEFF.DAT$V7) 
+CPUE_index<-c(rep(2,length(yearf1))) 
+CPUE_obs<-c(TUNEFF.DAT$V2)  
+CPUE_se_log<-c(TUNEFF.DAT$V5) 
 #---------------------------------------------------------------------------------
 # crear data.frame 
 CPUE1<-data.frame(year=CPUE_year,
@@ -455,8 +444,89 @@ dat1$use_meanbodywt<-0 #_use meanbodysize_data (0/1)
 \newpage
 ### Composición de tallas Formato `a4a`
 
-En este modelo no se ingresan datos de estructuras de tallas.
 
+```{r fig.height=8,fig.width=8}
+excel<-here("Indice_abundancia_tallas_medits_GSA1_hake.xlsx")
+
+comptallas<-read_excel(excel, sheet = "catch",col_names= TRUE,col_types=NULL,na="",skip= 0)
+
+yearcatch<-seq(2003,2021,1)
+tallas<-seq(4,75,1)
+comptallas<-comptallas[2:73,2:20]
+
+CompTallas<-data.frame(row.names = NULL,year=yearcatch,t(comptallas))
+colnames(CompTallas)<-c("year",tallas)
+
+plot_tallas<-CompTallas %>% melt(id.vars=c("year"))
+
+#--------------------------------------------------------------------------------------------------
+ggplot(plot_tallas) + 
+    geom_bar(aes(x = variable, y = value), stat="identity", fill='gray66', color = 'gray28') + 
+    facet_grid(rows = vars(year),  as.table = TRUE,scales = "free") + 
+    labs(x = 'Tallas', y = 'capturas (t)') +
+    theme(panel.background = element_rect(fill ="gray99")) + 
+    theme(panel.grid=element_line(color=NA)) + 
+     ggtitle('Flota')+
+    theme(plot.title = element_text(size = 6))
+
+```
+
+```{r}
+
+mediaTalla_flota<-as.numeric(plot_tallas$variable)*as.numeric(plot_tallas$value)
+
+TallasMedias_flota<-plot_tallas %>% mutate(value2=mediaTalla_flota) %>% group_by(year) %>% 
+  summarize(sum1 = sum(value),sum2 = sum(value2)) %>% mutate(Lmed=sum2/sum1)
+
+ggplot(TallasMedias_flota,aes(x=year,y=Lmed))+ geom_point()+geom_line()+ 
+    labs(x = 'Años', y = 'Tallas medias (cm)') +
+    theme(panel.background = element_rect(fill ="gray99")) + 
+    theme(panel.grid=element_line(color=NA)) + 
+     ggtitle('Flota')+
+    theme(plot.title = element_text(size = 6))
+
+```
+
+```{r fig.height=8,fig.width=8}
+
+Indtallas<-read_excel(excel, sheet = "indices",col_names= TRUE,col_types=NULL,na="",skip= 1)
+
+yearcatch<-seq(2003,2022,1)
+tallas<-seq(5,65,1)
+Indtallas<-Indtallas[2:62,10:29]
+
+IndicesTallas<-data.frame(row.names = NULL,year=yearcatch,t(Indtallas))
+colnames(IndicesTallas)<-c("year",tallas)
+plot_Indtallas<-IndicesTallas %>% melt(id.vars=c("year"))
+
+
+
+ggplot(plot_Indtallas) + 
+    geom_bar(aes(x = variable, y = value), stat="identity", fill='gray66', color = 'gray28')+
+    facet_grid(rows = vars(year),  as.table = TRUE,scales = "free") + 
+    labs(x = 'Tallas', y = 'capturas (t)') +
+    theme(panel.background = element_rect(fill ="gray99")) + 
+    theme(panel.grid=element_line(color=NA)) + 
+     ggtitle('Campaña')+
+    theme(plot.title = element_text(size = 6))
+
+```
+
+```{r}
+
+mediaTalla<-as.numeric(plot_Indtallas$variable)*as.numeric(plot_Indtallas$value)
+
+TallasMedias_Ind<-plot_Indtallas %>% mutate(value2=mediaTalla) %>% group_by(year) %>% 
+  summarize(sum1 = sum(value),sum2 = sum(value2)) %>% mutate(Lmed=sum2/sum1)
+
+ggplot(TallasMedias_Ind,aes(x=year,y=Lmed))+ geom_point()+geom_line()+ 
+    labs(x = 'Años', y = 'Tallas medias (cm)') +
+    theme(panel.background = element_rect(fill ="gray99")) + 
+    theme(panel.grid=element_line(color=NA)) + 
+     ggtitle('Campaña')+
+    theme(plot.title = element_text(size = 6))
+
+```
 
 ### Composición de tallas Formato `SS3`
 La siguiente sección configura los intervalos de talla (`length bin`) de la población. 
@@ -609,6 +679,28 @@ ggplot(Catnum) +
 ```
 
 
+
+```{r fig.height=6,fig.width=5}
+
+ age<-seq(0,5,1)
+ years<-2003:2021
+ nyears<-length(years)
+
+  
+  Indnum<-as.data.frame(TUNEFF.DAT[,2:7]) %>% 
+           mutate(Yr=years) %>% 
+           melt(id.vars="Yr") %>% 
+           mutate(edad=rep(age,each=nyears)) %>% 
+           mutate(type='Catch')
+           
+ggplot(Indnum) + 
+    geom_bar(aes(x = edad, y = value), stat="identity", fill='gray66', color = 'gray28') + 
+    facet_wrap(vars(Yr), dir = 'v', as.table = TRUE) + 
+    labs(x = 'Edad', y = 'Captura Campaña') +
+    theme(panel.background = element_rect(fill ="gray99")) + 
+    theme(panel.grid=element_line(color=NA)) + theme(plot.title = element_text(size = 12))
+  
+```
 
 
 
