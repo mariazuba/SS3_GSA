@@ -132,10 +132,12 @@ dir(dir_GSA1)
 ## Archivos utilizado para enfoque de modelación `SS3`
 1. Identificamos el directorio donde se encuentra el modelo base simple
 ```{r}
-dirname.base <- here("simple")
+dirname.base <- here("empirical_wtatage_and_age_selex")
+dir(here("empirical_wtatage_and_age_selex"))
 ```
 
 3. Creamos un nuevo directorio para la nueva versión del modelo modificado 
+
 ```{r}
 dirname.simple_mod <- here("GSA6_SS3")
 dir.create(path=dirname.simple_mod, showWarnings = TRUE, recursive = TRUE)
@@ -148,6 +150,23 @@ copy_SS_inputs(dir.old = dirname.base,
                copy_exe = TRUE,
                verbose = FALSE)
 ```
+
+Comprobar que modelo simple base se ejecuta sin problema antes de modificarlo
+
+```{r eval=F}
+exe_path <- here("Ejecutables_SS3","3.30.18_release")
+ss_exe_mac <- paste(exe_path,"ss_osx",sep= "/")
+
+r4ss::run(
+  dir = dirname.simple_mod,
+  exe = ss_exe_mac,
+  extras = "",
+  skipfinished = FALSE,
+  show_in_console = TRUE,
+  verbose = TRUE
+)
+```
+
 
 \newpage
 # Descripción del Formado de entrada de datos para cada enfoque de modelación
@@ -931,79 +950,85 @@ ctl <- r4ss::SS_readctl(here(dirname.base,"control.ss"),
                         use_datlist = TRUE,
                         datlist = dat) #base
 ctl1<-ctl # para modificar
-#names(ctl1) # muestra los objetos de la lista
+names(ctl1) # muestra los objetos de la lista
 ```
 
 ###  Especificaciones iniciales
 ```{r}
-
+#ctl1$warnings
+ctl1$Comments<-"#C 2023 Merluza archivo control modelo con datos de edad"
 ctl1$nseas    <-1
 ctl1$N_areas  <-1
 ctl1$Nages    <-6
-ctl1$Nsexes   <-2
+ctl1$Nsexes   <-1
 ctl1$Npopbins <-70
-ctl1$Nfleets  <-4
+ctl1$Nfleets  <-2
 ctl1$Do_AgeKey<-0
-```
-
-### Datos de los archivos
-```{r}
-ctl1$fleetnames <- c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")
+ctl1$fleetnames <- c("FISHERY", "SURVEY1")
+#ctl1$sourcefile
+#ctl1$type
+#ctl1$ReadVersion
 ctl1$eof        <- TRUE
 ```
 
 
 ### Especificaciones del crecimiento
+[Consulte la Guía de usuario de SS3: 8.4.1 Weight-at-Age](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#weight-at-age).
+
+En este caso, no se usa, por lo que se establece en 0.
+
+Si se usara el peso empírico por edad, `SS3` ignoraría todas las entradas relacionadas con el crecimiento, la madurez y la fecundidad que se especifican más adelante en el archivo de `control.ss` (aunque todavía espera entradas).
+
+Luego están las opciones para el número de patrones de crecimiento y platoons. Estos se establecen en 1 porque asumimos que toda la población tiene el mismo patrón de crecimiento y no hay platoons dentro de los patrones de crecimiento.
+
+
+Opciones y especificaciones: 
+
+
+- `EmpiricalWAA` = 0 means do not read wtatage.ss; 1 means read and use wtatage.ss and also read and use growth parameters
+- `N_GP` = N_Growth_Patterns (Growth Patterns, Morphs,  Bio Patterns, GP are terms used interchangeably in SS3)
+- `N_platoon` = N_platoons_Within_GrowthPattern 
+
 ```{r}
-#--------------------------------------------------------------
-# EmpiricalWAA
-#--------------------------------------------------------------
-# 0 means do not read wtatage.ss; 
-# 1 means read and use wtatage.ss and 
-# also read and use growth parameters
-ctl1$EmpiricalWAA   <- 0 
-#--------------------------------------------------------------
-# N_GP
-#_N_Growth_Patterns 
-#--------------------------------------------------------------
-# (Growth Patterns,
-# Morphs, 
-# Bio Patterns,
-# GP 
-# are terms used interchangeably in SS3)
+
+ctl1$EmpiricalWAA    <- 1 
 ctl1$N_GP            <- 1
-#--------------------------------------------------------------
-#N_platoon
-#_N_platoons_Within_GrowthPattern 
-#--------------------------------------------------------------
 ctl1$N_platoon       <- 1 
 ```
 
-### Distribución del reclutamiento
+## Distribución del reclutamiento
+
+[Consulte la Guía de usuario de SS3: 8.4.2 Settlement Timing for Recruits and Distribution](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#settlement-timing-for-recruits-and-distribution).
+
+
+Luego se especifica la distribución del reclutamiento. Suponemos que para esta población solo hay 1 patrón de crecimiento, 1 tiempo de asentamiento (settlement) y 1 área, por lo que podemos usar la opción 4.  Esta es la más simple, porque no requiere líneas completas de parámetros más adelante en el archivo `control.ss`.
+
+Tenga en cuenta que también usamos 1 asignación de asentamiento (settlement) y especificamos que los peces se establecieron en enero (1) a la edad 0 (año calendario).  Esto podría modificarse si los peces se establecieron a una edad o momento diferente.
+
+
+Opciones y especificaciones: 
+
+
+- `recr_dist_method`  = 2=main effects for GP, Area, Settle timing; 3=each Settle entity; 4=none (only when N_GP*Nsettle*pop==1)
+- `recr_global_area`  = 1=global; 2=by area
+- `recr_dist_read`    = number of recruitment settlement assignments 
+- `recr_dist_inx`     = unused option
+
+
+`recr_dist_pattern` es una  Matriz que contiene la siguiente información:
+
+  - `GPattern`:
+  - `month`:
+  - `area`:
+  - `age`: 
+
+(for each settlement assignment)
+
 ```{r}
-#--------------------------------------------------------------
-# recr_dist_method for parameters:  
-#--------------------------------------------------------------
-# 2=main effects for GP, Area, Settle timing; 
-# 3=each Settle entity; 
-# 4=none (only when N_GP*Nsettle*pop==1)
 ctl1$recr_dist_method  <- 2 
-#--------------------------------------------------------------
-# not yet implemented; Future usage: Spawner-Recruitment: 
-#--------------------------------------------------------------
-# 1=global; 
-# 2=by area
 ctl1$recr_global_area  <- 1
-#--------------------------------------------------------------
-#  number of recruitment settlement assignments 
-#--------------------------------------------------------------
 ctl1$recr_dist_read    <- 1
-#--------------------------------------------------------------
-# unused option
-#--------------------------------------------------------------
 ctl1$recr_dist_inx     <- 0
-#--------------------------------------------------------------
-# GPattern month  area  age (for each settlement assignment)
 #--------------------------------------------------------------
 rec_pattern<-data.frame(row.names="recr_dist_pattern1",
                         "GPattern" = 1,
@@ -1012,255 +1037,131 @@ rec_pattern<-data.frame(row.names="recr_dist_pattern1",
                         "age"      = 0)
 ctl1$recr_dist_pattern <- rec_pattern
 #--------------------------------------------------------------
-#_Cond 0 # N_movement_definitions goes here if Nareas > 1
-#--------------------------------------------------------------
-
-
-#--------------------------------------------------------------
-#_Cond 1.0 # first age that moves (real age at begin of season, not integer) 
-           # also cond on do_migration>0
-#--------------------------------------------------------------
-
-#--------------------------------------------------------------
-#_Cond 1 1 1 2 4 10 # example move definition for 
-#--------------------------------------------------------------
-  # seas=1, 
-  # morph=1, 
-  # source=1 
-  # dest=2, 
-  # age1=4, 
-  # age2=10
 
 ```
 
 
 ### Bloques
+No estamos usando bloques de tiempo, pero hay algunos especificados en el modelo. Tenga en cuenta que cualquier bloque puede especificarse y no usarse (los bloques se especifican aquí, pero no se usan hasta que se especifica dentro de una línea de parámetro), por lo que podría haber cualquier cantidad de bloques especificados aquí.
+
+[Consulte la Guía de usuario de SS3: 8.4.4 Time Blocks](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#time-blocks).
+
+
+Opciones y especificaciones: 
+
+- `N_Block_Designs` = Number of block patterns. These patterns can be referred to in the parameter sections to create a separate parameter value for each block. Following inputs are omitted if the number of block patterns equals 0.
+- `blocks_per_pattern` =
+- `Block_Design` =
+
 ```{r}
-#--------------------------------------------------------------
-#_Nblock_Patterns
-#--------------------------------------------------------------
+
 ctl1$N_Block_Designs    <- 1  
-
-#--------------------------------------------------------------
-#_blocks_per_pattern 
-#--------------------------------------------------------------
 ctl1$blocks_per_pattern <- 1 
-
-#--------------------------------------------------------------
-# begin and end years of blocks
-#--------------------------------------------------------------
 ctl1$Block_Design[[1]]  <- c(2003,2003)        
 ```
 
 
 ### Parámetros que varían en el tiempo
+Así mismo, no se utilizan parámetros variables en el tiempo, por lo que no es importante lo que se especifica en los parámetros de control variables en el tiempo.
+
+[Consulte la Guía de usuario de SS3: 8.4.5 Auto-generation](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#auto-generation).
+
+
+Opciones y especificaciones: 
+
 ```{r}
-#--------------------------------------------------------------------------------------
-# controls for all timevary parameters 
-#--------------------------------------------------------------
-#_time-vary parm bound check (
-   # 1=warn relative to base parm bounds; 
-   # 3=no bound check); 
-   # Also see env (3) and dev (5) options to constrain with base bounds
 ctl1$time_vary_adjust_method <- 1 
-
-
 #--------------------------------------------------------------
-# AUTOGEN
-#--------------------------------------------------------------
-# autogen: 
-     # 1st element for biology, 
-     # 2nd for SR, 
-     # 3rd for Q, 
-     # 4th reserved, 
-     # 5th for selex
-# where: 0 = autogen time-varying parms of this category; 
-#        1 = read each time-varying parm line; 
-#        2 = read then autogen if parm min==-12345
-#
 time_auto<-data.frame(matrix(rep(1,5),nrow=1,ncol=5))
 colnames(time_auto)<-paste("time_vary_auto_generation_",seq(1,5,1),sep="")
 
 ctl1$time_vary_auto_generation <-time_auto
-
-
+ctl1$time_vary_auto_generation 
 #--------------------------------------------------------------------------------------
-#_Available timevary codes
-#--------------------------------------------------------------
-#_Block types: 
-#--------------------------------------------------------------
-             # 0: P_block=P_base*exp(TVP); 
-             # 1: P_block=P_base+TVP; 
-             # 2: P_block=TVP; 
-             # 3: P_block=P_block(-1) + TVP
-
-#--------------------------------------------------------------
-#_Block_trends: 
-#--------------------------------------------------------------
-             # -1: trend bounded by base parm min-max and parms in transformed units (beware); 
-             # -2: endtrend and infl_year direct values; 
-             # -3: end and infl as fraction of base range
-
-#--------------------------------------------------------------
-#_EnvLinks:  
-#--------------------------------------------------------------
-             # 1: P(y)=P_base*exp(TVP*env(y));  
-             # 2: P(y)=P_base+TVP*env(y);  
-             # 3: P(y)=f(TVP,env_Zscore) w/ logit to stay in min-max;  
-             # 4: P(y)=2.0/(1.0+exp(-TVP1*env(y) - TVP2))
-
-#--------------------------------------------------------------
-#_DevLinks: 
-#--------------------------------------------------------------
-             # 1: P(y)*=exp(dev(y)*dev_se;  
-             # 2: P(y)+=dev(y)*dev_se;  
-             # 3: random walk;  
-             # 4: zero-reverting random walk with rho;  
-             # 5: like 4 with logit transform to stay in base min-max
-
-#--------------------------------------------------------------
-#_DevLinks(more): 
-#--------------------------------------------------------------
-             # 21-25 keep last dev for rest of years
-#
-#--------------------------------------------------------------
-#_Prior_codes: 
-#--------------------------------------------------------------
-             # 0=none; 
-             # 6=normal; 
-             # 1=symmetric beta; 
-             # 2=CASAL's beta; 
-             # 3=lognormal; 
-             # 4=lognormal with biascorr; 
-             # 5=gamma
-#
 ```
 
-### Parámetros biológicos
 
-```{r}
-# setup for M, growth, wt-len, maturity, fecundity, (hermaphro), recr_distr, cohort_grow, (movement), (age error), (catch_mult), sex ratio 
-#--------------------------------------------------------------
-#_NATMORT
-#--------------------------------------------------------------
-#_natM_type:
-#_0=1Parm;
-#_1=N_breakpoints;
-#_2=Lorenzen;
-#_3=agespecific;
-#_4=agespec_withseasinterpolate;
-#_5=BETA:_Maunder_link_to_maturity;
-#_6=Lorenzen_range
-#_no additional input for selected M option; read 1P per morph
-#
-ctl1$natM_type <-0
 
-#--------------------------------------------------------------
-# GrowthModel: 
-#--------------------------------------------------------------
-# 1=vonBert with L1&L2; 
-# 2=Richards with L1&L2; 
-# 3=age_specific_K_incr; 
-# 4=age_specific_K_decr; 
-# 5=age_specific_K_each; 
-# 6=NA; 
-# 7=NA; 
-# 8=growth cessation
-ctl1$GrowthModel <-1
-
-#--------------------------------------------------------------
-#_Age(post-settlement)_for_L1;linear growth below this
-#--------------------------------------------------------------
-ctl1$Growth_Age_for_L1 <- 1
-
-#--------------------------------------------------------------
-#_Growth_Age_for_L2 (999 to use as Linf)
-#--------------------------------------------------------------
-ctl1$Growth_Age_for_L2 <- 25
-
-#--------------------------------------------------------------
-#_exponential decay for growth above maxage 
-#(value should approx initial Z; 
-# -999 replicates 3.24; 
-# -998 to not allow growth above maxage)
-#--------------------------------------------------------------
-ctl1$Exp_Decay <- -999
-
-#--------------------------------------------------------------
-#_placeholder for future growth feature
-#--------------------------------------------------------------
-ctl1$Growth_Placeholder <- 0
-
-#--------------------------------------------------------------
-#_SD_add_to_LAA (set to 0.1 for SS2 V1.x compatibility)
-#--------------------------------------------------------------
-ctl1$SD_add_to_LAA <- 0
-
-#--------------------------------------------------------------
-#_CV_Growth_Pattern:  
-#--------------------------------------------------------------
-# 0 CV=f(LAA); 
-# 1 CV=F(A); 
-# 2 SD=F(LAA); 
-# 3 SD=F(A); 
-# 4 logSD=F(A)
-#--------------------------------------------------------------
-ctl1$CV_Growth_Pattern <- 0
-
-##--------------------------------------------------------------
-#_maturity_option: 
-##--------------------------------------------------------------
-# 1=length logistic; 
-# 2=age logistic; 
-# 3=read age-maturity matrix by growth_pattern; 
-# 4=read age-fecundity; 
-# 5=disabled; 
-# 6=read length-maturity
-##--------------------------------------------------------------
-ctl1$maturity_option <- 5
-
-##--------------------------------------------------------------
-#_First_Mature_Age
-ctl1$First_Mature_Age <- 2
-
-##--------------------------------------------------------------
-#_fecundity_at_length option:
-##--------------------------------------------------------------
-# (1)eggs=Wt*(a+b*Wt);
-# (2)eggs=a*L^b;
-# (3)eggs=a*Wt^b; 
-# (4)eggs=a+b*L; 
-# (5)eggs=a+b*W
-##--------------------------------------------------------------
-ctl1$fecundity_option <- 1
-
-##--------------------------------------------------------------
-#_hermaphroditism option: 
-##--------------------------------------------------------------
-# 0=none; 
-# 1=female-to-male age-specific fxn; 
-# -1=male-to-female age-specific fxn
-##--------------------------------------------------------------
-ctl1$hermaphroditism_option <- 0
-
-##--------------------------------------------------------------
-#_parameter_offset_approach for M, G, CV_G: 
-##--------------------------------------------------------------
-# 1- direct, no offset**; 
-# 2- male=fem_parm*exp(male_parm); 
-# 3: male=female*exp(parm) then old=young*exp(parm)
-##--------------------------------------------------------------
-ctl1$parameter_offset_approach <-1
-
-#_** in option 1, any male parameter with value = 0.0 and phase <0 is set equal to female parameter
-#
-
-```
 
 \newpage
 ### Parámetros biológicos
 
-La función principal del archivo de control es definir los parámetros que utilizará el modelo. A continuación se definen las líneas de parámetros biológicos:
+[Consulte la Guía de usuario de SS3: 8.5 Biology](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#biology).
+
+Las líneas de parámetros resultantes de la mortalidad natural, el crecimiento y la madurez (esta sección a veces se denomina parámetros MG) se especifican a continuación. El número de líneas de parámetros depende de las opciones seleccionadas en las líneas de especificación.  Los parámetros también deben especificarse en un orden particular, con los parámetros de las hembras antes que los de machos en un modelo de 2 sexos.
+
+Tenga en cuenta que la primera línea en el bloque de entrada SS anterior muestra los encabezados de columna. Todas las secciones con líneas de parámetros largas dentro del archivo de control tienen estos mismo encabezados. Hay muchas especificaciones en estas largas líneas de parámetros, pero algunas de particular importancia son:
+
+- Todo lo que tenga fase negativa (séptimo valor en una línea larga de parámetros) no se estima y se establece en el valor inicial (tercer valor en la línea), mientras que las fases positivas sí se estiman.
+- La mortalidad natural tanto para machos como para hembras se especifican en 0,1.
+- Se estiman los tres parámetros de la curva de crecimiento de von Bertalanffy.
+
+A continuación se presentan algunas opciones no utilizadas, porque no hay estacionalidad en los parámetros biológicos:
+
+
+Opciones y especificaciones: 
+
+- `natM_type`: 0=1Parm;1=N_breakpoints;2=Lorenzen;3=agespecific;4=agespec_withseasinterpolate;[8.5.1 Natural Mortality](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#natural-mortality).
+ 5=BETA:_Maunder_link_to_maturity;6=Lorenzen_rangeno additional input for selected M option; read 1P per morph
+- `GrowthModel`: 1=vonBert with L1&L2; 2=Richards with L1&L2; 3=age_specific_K_incr; 4=age_specific_K_decr; 5=age_specific_K_each; 6=NA; 7=NA; 8=growth cessation
+- `Growth_Age_for_L1`: Age(post-settlement)_for_L1;linear growth below this
+- `Growth_Age_for_L2`: 999 to use as Linf 
+- `Exp_Decay`: exponential decay for growth above maxage (value should approx initial Z;  -999 replicates 3.24; -998 to not allow growth above maxage)
+- `Growth_Placeholder`: placeholder for future growth feature
+- `N_natMparms`: 
+- `SD_add_to_LAA`: SD_add_to_LAA (set to 0.1 for SS2 V1.x compatibility)
+- `CV_Growth_Pattern`:  0=(CV=f(LAA)); 1=(CV=F(A));  2=(SD=F(LAA));  3=(SD=F(A));  4=(logSD=F(A))
+- `maturity_option`: 1=length logistic; 2=age logistic; 3=read age-maturity matrix by growth_pattern; 4=read age-fecundity; 5=disabled; 6=read length-maturity
+- `First_Mature_Age`:
+- `fecundity_option`: (1)eggs=Wt*(a+b*Wt); (2)eggs=a*L^b; (3)eggs=a*Wt^b; (4)eggs=a+b*L; (5)eggs=a+b*W
+- `hermaphroditism_option`: 0=none; 1=female-to-male age-specific fxn; -1=male-to-female age-specific fxn
+- `parameter_offset_approach`:  1- direct, no offset**;  2- male=fem_parm*exp(male_parm); 3: male=female*exp(parm) then old=young*exp(parm)
+
+
+El siguiente código permite modificar las opciones antes especificadas:
+
+```{r}
+
+# ctl1$natM_type          <- 3
+# #incluir vector de mortalidad natural---------------------------
+# # leer vector de M natural desde archivos de GADGET
+# medad0 <- list()
+# medad1<-data.frame(matrix(c(2.21,1.3,1.3,1.3),nrow=1,ncol=4),row.names="#_natM1")
+# colnames(medad1)<-paste("Age_",seq(0,3,1),sep="")
+# 
+# medad0[[1]] <- medad1
+# names(medad0)<-"natM"
+# ctl1 <- append(ctl1, medad0, after = 28)
+
+
+ctl1$natM_type          <- 0
+
+#Crecimiento ----
+ctl1$GrowthModel        <- 1 # Modelo de crecimiento 
+ctl1$Growth_Age_for_L1  <- 1 #Edad de referencia para el parámetro de primera talla a la edad (posterior al reclutamiento(edad real)).
+ctl1$Growth_Age_for_L2  <- 25 #Edad de referencia para el segundo parámetro de talla por edad (999 para usar como L infinito).
+ctl1$Exp_Decay          <- -999 #Replicar el cálculo más simple realizado en SS3 v.3.24.
+ctl1$Growth_Placeholder <- 0
+ctl1$SD_add_to_LAA      <- 0
+ctl1$CV_Growth_Pattern  <- 0 #(no puede ser variable)
+
+#Madurez-fecundidad ----
+ctl1$maturity_option    <- 5
+ctl1$First_Mature_Age   <- 2
+ctl1$fecundity_option   <- 1
+ctl1$hermaphroditism_option    <- 0
+ctl1$parameter_offset_approach <- 1
+
+```
+
+La función principal del archivo de control es definir los parámetros que utilizará el modelo. A continuación se indican  las líneas de parámetros biológicos que serán modificadas:
+
+```{r}
+row.names(ctl$MG_parms)
+```
+
+
+La definición de cada línea es la siguiente:
 
 - `NatM_p_1_Fem_GP_1` = Mortalidad natural para el patrón de crecimiento de hembras (Fem) 1, donde el número de parámetros de mortalidad natural depende de la opción seleccionada.
 - `L_at_Amin_Fem_GP_1` = Longitud en Amin (unidades en cm) para hembra, patrón de crecimiento 1.
@@ -1276,8 +1177,13 @@ La función principal del archivo de control es definir los parámetros que util
 - `Eggs_beta_Fem_GP_1` 
  
  
-
 Cada línea de parámetro biológicos contiene la siguiente información:
+
+```{r}
+names(ctl$MG_parms)
+```
+
+La definición de cada línea es la siguiente:
 
 - `LO`      = un valor mínimo para el parámetro
 - `HI`      = un valor máximo para el parámetro
@@ -1304,18 +1210,35 @@ Cada línea de parámetro biológicos contiene la siguiente información:
 - `Block_Fxn`= forma funcional para el desplazamiento de bloques 
 
 
-\newpage
+### Mortalidad natural 
+\quad
 
-#### Parámetros hembras
 
-##### Mortalidad natural Fem GP_1
+La opción 0 se usa para la mortalidad natural porque solo se asume 1 valor.
+
+### Crecimiento
+\quad
+
+[Consulte la Guía de usuario de SS3: 8.5.2 Growth](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#growth).
+
+El modelo de crecimiento 1 se usa para especificar un modelo de crecimiento de von Bertalanffy, seguido de líneas que especifican detalles sobre el crecimiento.
+
+
+### Madurez-fecundidad
+\quad
+
+[Consulte la Guía de usuario de SS3: 8.5.3 Maturity-Fecundity](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#maturity-fecundity).
+
+
+### Hermafroditismo
+
+[Consulte la Guía de usuario de SS3: 8.5.4 Hermaphroditism](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#hermaphroditism).
+
+
 \quad
 ```{r}
 ##--------------------------------------------------------------
-# NatM_uniform_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms1<-data.frame(row.names="NatM_p_1_Fem_GP_1",
-                      "LO"           = 0.05,
+MG_parms1<-data.frame("LO"           = 0.05,
                       "HI"           = 0.4,
                       "INIT"         = 0.18,
                       "PRIOR"        = -1.60944,
@@ -1330,19 +1253,10 @@ MG_parms1<-data.frame(row.names="NatM_p_1_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[1,] <- MG_parms1
+ctl1$MG_parms["NatM_p_1_Fem_GP_1",] <- MG_parms1
 ##--------------------------------------------------------------
-```
 
-##### longitud a la edad mínima Fem GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 1  BioPattern: 1  Growth
-# L_at_Amin_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms2<-data.frame(row.names="L_at_Amin_Fem_GP_1",
-                      "LO"           = 2,
+MG_parms2<-data.frame("LO"           = 2,
                       "HI"           = 15,
                       "INIT"         = 5,
                       "PRIOR"        = 32,
@@ -1357,19 +1271,10 @@ MG_parms2<-data.frame(row.names="L_at_Amin_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[2,] <-MG_parms2
+ctl1$MG_parms["L_at_Amin_Fem_GP_1",] <-MG_parms2
 ##--------------------------------------------------------------
-```
 
-##### longitud a la edad máxima Fem GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 1  BioPattern: 1  Growth
-# L_at_Amax_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms3<-data.frame(row.names="L_at_Amax_Fem_GP_1",
-                      "LO"           = 45,
+MG_parms3<-data.frame("LO"           = 45,
                       "HI"           = 60,
                       "INIT"         = 53,
                       "PRIOR"        = 50,
@@ -1384,18 +1289,10 @@ MG_parms3<-data.frame(row.names="L_at_Amax_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl$MG_parms[3,] <- MG_parms3
+ctl$MG_parms["L_at_Amax_Fem_GP_1",] <- MG_parms3
 ##--------------------------------------------------------------
-```
 
-##### Tasa de crecimiento Fem GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# VonBert_K_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms4<-data.frame(row.names="VonBert_K_Fem_GP_1",
-                      "LO"           = 0.2,
+MG_parms4<-data.frame("LO"           = 0.2,
                       "HI"           = 0.4,
                       "INIT"         = 0.3,
                       "PRIOR"        = 0.3,
@@ -1410,18 +1307,10 @@ MG_parms4<-data.frame(row.names="VonBert_K_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[4,]<-MG_parms4
+ctl1$MG_parms["VonBert_K_Fem_GP_1",]<-MG_parms4
 ##--------------------------------------------------------------
-```
 
-##### CV crecimiento Fem GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# CV_young_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms5<-data.frame(row.names="CV_young_Fem_GP_1",
-                      "LO"           = 0.03,
+MG_parms5<-data.frame("LO"           = 0.03,
                       "HI"           = 0.16,
                       "INIT"         = 0.066,
                       "PRIOR"        = 0.1,
@@ -1436,17 +1325,10 @@ MG_parms5<-data.frame(row.names="CV_young_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[5,] <- MG_parms5
+ctl1$MG_parms["CV_young_Fem_GP_1",] <- MG_parms5
 ##--------------------------------------------------------------
-```
 
-
-```{r}
-##--------------------------------------------------------------
-# CV_old_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms6<-data.frame(row.names="CV_old_Fem_GP_1",
-                      "LO"           = 0.03,
+MG_parms6<-data.frame("LO"           = 0.03,
                       "HI"           = 0.16,
                       "INIT"         = 0.062,
                       "PRIOR"        = 0.1,
@@ -1461,19 +1343,10 @@ MG_parms6<-data.frame(row.names="CV_old_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[6,] <- MG_parms6
+ctl1$MG_parms["CV_old_Fem_GP_1",] <- MG_parms6
 ##--------------------------------------------------------------
-```
 
-##### Relación longitud-peso Fem GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 1  BioPattern: 1  WtLen
-# Wtlen_1_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms7<-data.frame(row.names="Wtlen_1_Fem_GP_1",
-                      "LO"           = -3,
+MG_parms7<-data.frame("LO"           = -3,
                       "HI"           = 3,
                       "INIT"         = 7e-06,
                       "PRIOR"        = 7e-06,
@@ -1488,19 +1361,9 @@ MG_parms7<-data.frame(row.names="Wtlen_1_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[7,] <- MG_parms7
+ctl1$MG_parms["Wtlen_1_Fem_GP_1",] <- MG_parms7
 ##--------------------------------------------------------------
-```
-
-
-
-```{r}
-##--------------------------------------------------------------
-# Sex: 1  BioPattern: 1  WtLen
-# Wtlen_2_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms8<-data.frame(row.names="Wtlen_2_Fem_GP_1",
-                      "LO"           = -3,
+MG_parms8<-data.frame("LO"           = -3,
                       "HI"           = 3,
                       "INIT"         = 2.9624,
                       "PRIOR"        = 2.9624,
@@ -1515,19 +1378,10 @@ MG_parms8<-data.frame(row.names="Wtlen_2_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[8,] <-MG_parms8
+ctl1$MG_parms["Wtlen_2_Fem_GP_1",] <-MG_parms8
 ##--------------------------------------------------------------
-```
 
-##### Relación Madurez Fem GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 1  BioPattern: 1  Maturity&Fecundity
-# Mat50%_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms9<-data.frame(row.names="Mat50%_Fem_GP_1",
-                      "LO"           = -3,
+MG_parms9<-data.frame("LO"           = -3,
                       "HI"           = 43,
                       "INIT"         = 37,
                       "PRIOR"        = 37,
@@ -1542,17 +1396,10 @@ MG_parms9<-data.frame(row.names="Mat50%_Fem_GP_1",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[9,]<- MG_parms9 
+ctl1$MG_parms["Mat50%_Fem_GP_1",]<- MG_parms9 
 ##--------------------------------------------------------------
-```
 
-```{r}
-##--------------------------------------------------------------
-# Sex: 1  BioPattern: 1  Maturity&Fecundity
-# Mat_slope_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms10<-data.frame(row.names="Mat_slope_Fem_GP_1",
-                       "LO"           = -3,
+MG_parms10<-data.frame("LO"           = -3,
                        "HI"           = 3,
                        "INIT"         = -0.48,
                        "PRIOR"        = -0.48,
@@ -1567,18 +1414,10 @@ MG_parms10<-data.frame(row.names="Mat_slope_Fem_GP_1",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[10,]<-MG_parms10  
+ctl1$MG_parms["Mat_slope_Fem_GP_1",]<-MG_parms10  
 ##--------------------------------------------------------------
-```
 
-##### Eggs/kg Fem GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Eggs/kg_inter_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms11<-data.frame(row.names="Eggs/kg_inter_Fem_GP_1",
-                       "LO"           = -3,
+MG_parms11<-data.frame("LO"           = -3,
                        "HI"           = 3,
                        "INIT"         = 1,
                        "PRIOR"        = 1,
@@ -1593,17 +1432,10 @@ MG_parms11<-data.frame(row.names="Eggs/kg_inter_Fem_GP_1",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[11,] <-MG_parms11
+ctl1$MG_parms["Eggs/kg_inter_Fem_GP_1",] <-MG_parms11
 ##--------------------------------------------------------------
-```
 
-
-```{r}
-##--------------------------------------------------------------
-# Eggs/kg_slope_wt_Fem_GP_1
-##--------------------------------------------------------------
-MG_parms12<-data.frame(row.names="Eggs/kg_slope_wt_Fem_GP_1",
-                       "LO"           = -3,
+MG_parms12<-data.frame("LO"           = -3,
                        "HI"           = 3,
                        "INIT"         = 0,
                        "PRIOR"        = 0,
@@ -1618,242 +1450,10 @@ MG_parms12<-data.frame(row.names="Eggs/kg_slope_wt_Fem_GP_1",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[12,] <- MG_parms12
+ctl1$MG_parms["Eggs/kg_slope_wt_Fem_GP_1",] <- MG_parms12
 ##--------------------------------------------------------------
-```
 
-#### Parámetros Machos
-##### Mortalidad natural Mal GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  NatMort
-# NatM_uniform_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms13<-data.frame(row.names="NatM_p_1_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -3,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[13,] <- "#"
-##--------------------------------------------------------------
-```
-
-##### longitud a la edad  Mal GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  Growth
-# L_at_Amin_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms14<-data.frame(row.names="L_at_Amin_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -3,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[14,] <- "#"
-##--------------------------------------------------------------
-```
-
-
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  Growth
-# L_at_Amax_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms15<-data.frame(row.names="L_at_Amax_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -4,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[15,] <-"#"
-##--------------------------------------------------------------
-```
-
-##### Tasa de crecimiento Mal GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  Growth
-# VonBert_K_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms16<-data.frame(row.names="VonBert_K_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -4,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[16,] <-"#"
-##--------------------------------------------------------------
-```
-
-##### CV crecimiento Mal GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  Growth
-# CV_young_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms17<-data.frame(row.names="CV_young_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -0,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[17,] <- "#"
-##--------------------------------------------------------------
-```
-
-
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  Growth
-# CV_old_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms18<-data.frame(row.names="CV_old_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -0,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[18,] <-"#"
-##--------------------------------------------------------------
-```
-
-##### Relación longitud-peso Mal GP_1
-\quad
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  WtLen
-# Wtlen_1_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms19<-data.frame(row.names="Wtlen_1_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -0,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[19,] <- "#"
-##--------------------------------------------------------------
-```
-
-
-```{r}
-##--------------------------------------------------------------
-# Sex: 2  BioPattern: 1  WtLen
-# Wtlen_2_Mal_GP_1
-##--------------------------------------------------------------
-MG_parms20<-data.frame(row.names="Wtlen_2_Mal_GP_1",
-                       "LO"           = 0,
-                       "HI"           = 0,
-                       "INIT"         = 0,
-                       "PRIOR"        = 0,
-                       "PR_SD"        = 0,
-                       "PR_type"      = 0,
-                       "PHASE"        = -0,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
-##--------------------------------------------------------------
-ctl1$MG_parms[20,] <- "#"
-##--------------------------------------------------------------
-```
-
-##### Hermaphroditism
-\quad
-Revisar como se ingresa esta información, en ejemplo simple no se utiliza
-```{r}
-##--------------------------------------------------------------
-# Hermaphroditism
-##--------------------------------------------------------------
-```
-
-##### Distribución del reclutamiento
-\quad
-```{r}
-##--------------------------------------------------------------
-#  Recruitment Distribution 
-# RecrDist_GP_1
-##--------------------------------------------------------------
-MG_parms21<-data.frame(row.names="RecrDist_GP_1",
-                       "LO"           = 0,
+MG_parms21<-data.frame("LO"           = 0,
                        "HI"           = 2,
                        "INIT"         = 1,
                        "PRIOR"        = 1,
@@ -1868,18 +1468,10 @@ MG_parms21<-data.frame(row.names="RecrDist_GP_1",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[21,] <- MG_parms21
+ctl1$MG_parms["RecrDist_GP_1",] <- MG_parms21
 ##--------------------------------------------------------------
-```
 
-
-```{r}
-##--------------------------------------------------------------
-# Recruitment Distribution 
-# RecrDist_Area_1
-##--------------------------------------------------------------
-MG_parms22<-data.frame(row.names="RecrDist_Area_1",
-                       "LO"           = 0,
+MG_parms22<-data.frame("LO"           = 0,
                        "HI"           = 2,
                        "INIT"         = 1,
                        "PRIOR"        = 1,
@@ -1894,17 +1486,10 @@ MG_parms22<-data.frame(row.names="RecrDist_Area_1",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[22,]<-MG_parms22
+ctl1$MG_parms["RecrDist_Area_1",]<-MG_parms22
 ##--------------------------------------------------------------
-```
 
-```{r}
-##--------------------------------------------------------------
-#  Recruitment Distribution 
-# RecrDist_month_1
-##--------------------------------------------------------------
-MG_parms23<-data.frame(row.names="RecrDist_month_1",
-                       "LO"           = 0,
+MG_parms23<-data.frame("LO"           = 0,
                        "HI"           = 2,
                        "INIT"         = 1,
                        "PRIOR"        = 1,
@@ -1919,19 +1504,10 @@ MG_parms23<-data.frame(row.names="RecrDist_month_1",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[23,]<- MG_parms23 
+ctl1$MG_parms["RecrDist_month_1",]<- MG_parms23 
 ##--------------------------------------------------------------
-```
 
-##### Cohort growth dev base
-\quad
-```{r}
-##--------------------------------------------------------------
-#  Cohort growth dev base
-# CohortGrowDev
-##--------------------------------------------------------------
-MG_parms24<-data.frame(row.names="CohortGrowDev",
-                       "LO"           = 1,
+MG_parms24<-data.frame("LO"           = 1,
                        "HI"           = 1,  
                        "INIT"         = 1,   
                        "PRIOR"        = 1,
@@ -1946,35 +1522,10 @@ MG_parms24<-data.frame(row.names="CohortGrowDev",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[24,] <- MG_parms24
-##--------------------------------------------------------------
-```
-
-Revisar como se ingresa esta información, en ejemplo simple no se utiliza
-```{r}
-##--------------------------------------------------------------
-#  Movement
+ctl1$MG_parms["CohortGrowDev",] <- MG_parms24
 ##--------------------------------------------------------------
 
-##--------------------------------------------------------------
-#  Age Error from parameters
-##--------------------------------------------------------------
-
-##--------------------------------------------------------------
-#  catch multiplier
-##--------------------------------------------------------------
-
-```
-
-#####  fraction female, by GP
-\quad
-```{r}
-##--------------------------------------------------------------
-#  fraction female, by GP
-# FracFemale_GP_1
-##--------------------------------------------------------------
-MG_parms25<-data.frame(row.names="FracFemale_GP_1",
-                       "LO"           = 0.000001,
+MG_parms25<-data.frame("LO"           = 0.000001,
                        "HI"           = 0.999999,
                        "INIT"         = 0.999999,
                        "PRIOR"        = 0.5,
@@ -1989,91 +1540,67 @@ MG_parms25<-data.frame(row.names="FracFemale_GP_1",
                        "Block"        = 0,
                        "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
-ctl1$MG_parms[25,] <-MG_parms25
+ctl1$MG_parms["FracFemale_GP_1",] <-MG_parms25
 ##--------------------------------------------------------------
+##--------------------------------------------------------------
+#elimino los parámetros que no se utilizaran en el modelo trimestral por el momento
+patron_eliminar<-rownames(ctl1$MG_parms)[grep("_Mal_",rownames(ctl1$MG_parms))] 
+ctl1$MG_parms <- subset(ctl1$MG_parms, !rownames(ctl1$MG_parms) %in%
+                          c(patron_eliminar,
+                            "Eggs_beta_Fem_GP_1","Eggs_alpha_Fem_GP_1"))
+
+# revisa salidas primeras columnas
+
+ctl1$MG_parms
+
 ```
 
-#####  M2 parameter for each predator fleet
-\quad
-Revisar como se ingresa esta información, en ejemplo simple no se utiliza
-```{r}
-##--------------------------------------------------------------
-#  M2 parameter for each predator fleet
-##--------------------------------------------------------------
-#
-```
 
-#####_no timevary MG parameters
+##### Seasonal_effects_on_biology_parms
 \quad
-Revisar como se ingresa esta información, en ejemplo simple no se utiliza
-```{r}
-##--------------------------------------------------------------
-#_no timevary MG parameters
-##--------------------------------------------------------------
-#
-```
 
-#####_seasonal_effects_on_biology_parms
-\quad
+Los efectos estacionales están disponibles para los parámetros de peso-longitud, madurez, fecundidad y para el parámetro de crecimiento K. Los valores de los parámetros estacionales ajustan el valor del parámetro base para esa temporada.
+
+`MGparm_seas_effects`: Estacionalidad para parámetros biológicos seleccionados (no una entrada condicional). Lea 10 enteros para especificar qué parámetros biológicos tienen estacionalidad: `female-wtlen1`, `female-wtlen2`, `maturity1`, `maturity2`, `fecundity1`, `fecundity2`, `male-wtlen1`, `male-wtlen2`, `L1`, `K`. La lectura de un valor positivo selecciona ese factor para la estacionalidad.
+
+[Consulte la Guía de usuario de SS3: 8.5.12 Seasonal Biology Parameters](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#seasonal-biology-parameters).
+
 ```{r}
-##--------------------------------------------------------------
-#_femwtlen1,femwtlen2,mat1,mat2,fec1,fec2,Malewtlen1,malewtlen2,L1,K
-##--------------------------------------------------------------
 MGparm_seas_effects1<-data.frame(matrix(rep(0,10),nrow=1,ncol=10))
 colnames(MGparm_seas_effects1)<-paste("MGparm_seas_effects_",seq(1,10,1),sep="")
 
 ctl1$MGparm_seas_effects <-MGparm_seas_effects1
 
 ##--------------------------------------------------------------
-#_ LO HI INIT PRIOR PR_SD PR_type PHASE
-#_Cond -2 2 0 0 -1 99 -2 #_placeholder when no seasonal MG parameters
-#
-##--------------------------------------------------------------
 ```
 
 
 ### Relación stock recluta
+
+
+[Consulte la Guía de usuario de SS3: 8.6 Spawner-Recruitment](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#spawner-recruitment).
+
+
+- `SR_function`: 1=NA;2=Ricker;3=std_B-H;4=SCAA;5=Hockey; 6=B-H_flattop; 7=survival_3Parm; 8=Shepherd_3Parm;  9=RickerPower_3parm
+- `Use_steep_init_equi`: 0/1 to use steepness in initial equ recruitment calculation
+- `ctl1$Sigma_R_FofCurvature`: future feature: 0/1 to make realized sigmaR a function of SR curvature
+- `Sigma_R_FofCurvature`: future feature: 0/1 to make realized sigmaR a function of SR curvature
+
+
 ```{r}
-##--------------------------------------------------------------
-#_Spawner-Recruitment; Options: 
-##--------------------------------------------------------------
-    # 1=NA; 
-    # 2=Ricker; 
-    # 3=std_B-H; 
-    # 4=SCAA; 
-    # 5=Hockey; 
-    # 6=B-H_flattop; 
-    # 7=survival_3Parm; 
-    # 8=Shepherd_3Parm; 
-    # 9=RickerPower_3parm
-ctl1$SR_function<-4
 
-##--------------------------------------------------------------
-# # 0/1 to use steepness in initial equ recruitment calculation
-##--------------------------------------------------------------
-ctl1$Use_steep_init_equi <-0
-
-##--------------------------------------------------------------
-#  future feature:  
-# 0/1 to make realized sigmaR a function of SR curvature
-##--------------------------------------------------------------
+ctl1$SR_function          <-4
+ctl1$Use_steep_init_equi  <-0
 ctl1$Sigma_R_FofCurvature <-0 
-#--------------------------------------------------------------------------------------------
-#_LO_HI_INIT_PRIOR_PR_SD_PR_type_PHASE_env-var_use_dev_dev_mnyr_dev_mxyr_dev_PH_Block_Blk_Fxn_#_parm_name
-#names(ctl1$SR_parms)
-#row.names(ctl1$SR_parms)
-#--------------------------------------------------------------------------------------------
 
 ```
 
 
 
 ```{r}
+
 ##--------------------------------------------------------------
-#SR_LN(R0) 
-##--------------------------------------------------------------
-SR_parms1<-data.frame(row.names="SR_LN(R0)",
-                      "LO"           = 5,
+SR_parms1<-data.frame("LO"           = 5,
                       "HI"           = 30,
                       "INIT"         = 20,
                       "PRIOR"        = 15,
@@ -2088,16 +1615,10 @@ SR_parms1<-data.frame(row.names="SR_LN(R0)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$SR_parms[1,]<-SR_parms1 
-```
+rownames(ctl1$SR_parms)[1]<-"SR_LN(R0)"
 
-
-
-```{r}
 ##--------------------------------------------------------------
-#SR_BH_steep
-##--------------------------------------------------------------
-SR_parms2<-data.frame(row.names="SR_SCAA_null",
-                      "LO"           = 0.2,
+SR_parms2<-data.frame("LO"           = 0.2,
                       "HI"           = 1,
                       "INIT"         = 0.88,
                       "PRIOR"        = 0.777,
@@ -2113,16 +1634,10 @@ SR_parms2<-data.frame(row.names="SR_SCAA_null",
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
 ctl1$SR_parms[2,] <-SR_parms2
+rownames(ctl1$SR_parms)[2]<-"SR_SCAA_null"
 ##--------------------------------------------------------------
-```
 
-
-```{r}
-##--------------------------------------------------------------
-#SR_sigmaR
-##--------------------------------------------------------------
-SR_parms3<-data.frame(row.names="SR_sigmaR",
-                      "LO"           = 0.3,
+SR_parms3<-data.frame("LO"           = 0.3,
                       "HI"           = 1.6,
                       "INIT"         = 0.6,
                       "PRIOR"        = 1.1,
@@ -2138,16 +1653,10 @@ SR_parms3<-data.frame(row.names="SR_sigmaR",
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
 ctl1$SR_parms[3,] <-SR_parms3
+rownames(ctl1$SR_parms)[3]<-"SR_sigmaR"
 ##--------------------------------------------------------------
-```
 
-
-```{r}
-##--------------------------------------------------------------
-#SR_regime 
-##--------------------------------------------------------------
-SR_parms4<-data.frame(row.names="SR_regime",
-                      "LO"           = -5,
+SR_parms4<-data.frame("LO"           = -5,
                       "HI"           = 5,
                       "INIT"         = 0,
                       "PRIOR"        = 0,
@@ -2163,16 +1672,10 @@ SR_parms4<-data.frame(row.names="SR_regime",
                       "Block_Fxn"    = 0)
 ##--------------------------------------------------------------
 ctl1$SR_parms[4,] <-SR_parms4
+rownames(ctl1$SR_parms)[4]<-"SR_regime"
 ##--------------------------------------------------------------
-```
 
-
-```{r}
-##--------------------------------------------------------------
-#SR_autocorr
-##--------------------------------------------------------------
-SR_parms5<-data.frame(row.names="SR_autocorr",
-                      "LO"           = 0,
+SR_parms5<-data.frame("LO"           = 0,
                       "HI"           = 2,
                       "INIT"         = 0,
                       "PRIOR"        = 1,
@@ -2187,265 +1690,129 @@ SR_parms5<-data.frame(row.names="SR_autocorr",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$SR_parms[5,] <- SR_parms5
-
+rownames(ctl1$SR_parms)[5]<-"SR_autocorr"
+##--------------------------------------------------------------
 ctl1$SR_parms
 ```
 
 
 ### Desvíos de los reclutamientos
+
+[Consulte la Guía de usuario de SS3: 8.6.5 Recruitment Deviation Setup](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#recruitment-deviation-setup).
+
+
+Las opciones de desviación de reclutamiento se especifican después de los parámetros de SR. Primero están las opciones de desviaciones estándar de reclutamiento:
+
+
+- `do_recdev`: 0=none; 1=devvector (R=F(SSB)+dev); 2=deviations (R=F(SSB)+dev); 3=deviations (R=R0*dev; dev2=R-f(SSB)); 4=like 3 with sum(dev2) adding penalty
+- `MainRdevYrFirst`: first year of main recr_devs;early devs can preceed this era
+- `MainRdevYrLast`: last year of main recr_devs; forecast devs start in following year
+- `recdev_phase`:
+
+Estos definen las principales desviaciones de reclutamientos, que en este caso duran desde el primer año del modelo hasta el último año. También se leen opciones avanzadas:
+
+
+- `recdev_adv`: (0/1) to read 13 advanced options
+- `recdev_early_start`: (0=none; neg value makes relative to recdev_start)
+- `recdev_early_phase`: 
+- `Fcast_recr_phase`: (incl. late recr) (0 value resets to maxphase+1)
+
+- `lambda4Fcast_recr_like`: lambda for Fcast_recr_like occurring before endyr+1
+- `last_early_yr_nobias_adj`: last_yr_nobias_adj_in_MPD; begin of ramp
+- `first_yr_fullbias_adj`: first_yr_fullbias_adj_in_MPD; begin of plateau
+- `last_yr_fullbias_adj`: last_yr_fullbias_adj_in_MPD
+- `first_recent_yr_nobias_adj`: end_yr_for_ramp_in_MPD (can be in forecast to shape ramp, but SS3 sets bias_adj to 0.0 for fcast yrs)
+- `max_bias_adj`: max_bias_adj_in_MPD; (typical ~0.8; -3 sets all years to 0.0; -2 sets all non-forecast yrs w/ estimated recdevs to 1.0; -1 sets biasadj=1.0 for all yrs w/ recdevs).
+- `period_of_cycles_in_recr`: period of cycles in recruitment (N parms read below)
+- `min_rec_dev`: 
+- `max_rec_dev`:
+- `N_Read_recdevs`:
+
+Las opciones avanzadas permiten al usuario sesgar el ajuste de las desviaciones de reclutamiento. Hay más información sobre el ajuste del sesgo en el manual del usuario de SS, pero la idea general es tener en cuenta el hecho de que las desviaciones de reclutamiento anteriores y posteriores probablemente tengan menos información que las del medio.
+
+La rampa de ajuste de sesgo tiene esto en cuenta y, por lo general, se “ajusta” observando la rampa de sesgo en los resultados del modelo después de ejecutarlo, volviendo a especificar la rampa de sesgo según sea necesario y volviendo a ejecutar el modelo
+
 ```{r}
-##--------------------------------------------------------------
-#_no timevary SR parameters
-##--------------------------------------------------------------
 
-##--------------------------------------------------------------
-#do_recdev:  
-##--------------------------------------------------------------
-   #0=none; 
-   #1=devvector (R=F(SSB)+dev); 
-   #2=deviations (R=F(SSB)+dev); 
-   #3=deviations (R=R0*dev; dev2=R-f(SSB)); 
-   #4=like 3 with sum(dev2) adding penalty
-ctl1$do_recdev <- 1
-
-##--------------------------------------------------------------
-# first year of main recr_devs; 
-#early devs can preceed this era
-##--------------------------------------------------------------
+ctl1$do_recdev       <- 1
 ctl1$MainRdevYrFirst <- 2003
+ctl1$MainRdevYrLast  <- 2021
+ctl1$recdev_phase    <- 1
+ctl1$recdev_adv      <- 0  
+ctl1$recdev_early_start <- NULL
+ctl1$recdev_early_phase <- NULL
+ctl1$Fcast_recr_phase   <- NULL
+ctl1$lambda4Fcast_recr_like     <-NULL
+ctl1$last_early_yr_nobias_adj   <-NULL
+ctl1$first_yr_fullbias_adj      <-NULL
+ctl1$last_yr_fullbias_adj       <-NULL
+ctl1$first_recent_yr_nobias_adj <-NULL
+ctl1$max_bias_adj               <-NULL
+ctl1$period_of_cycles_in_recr <-NULL
+ctl1$min_rec_dev     <- NULL
+ctl1$max_rec_dev     <- NULL
+ctl1$N_Read_recdevs  <- NULL
 
-##--------------------------------------------------------------
-# last year of main recr_devs; 
-#forecast devs start in following year
-##--------------------------------------------------------------
-ctl1$MainRdevYrLast <- 2021
-
-##--------------------------------------------------------------
-#_recdev phase 
-##--------------------------------------------------------------
-ctl1$recdev_phase <- 1
-
-##--------------------------------------------------------------
-# (0/1) to read 13 advanced options
-##--------------------------------------------------------------
-ctl1$recdev_adv <- 0  
-
-##--------------------------------------------------------------
-#_recdev_early_start 
-#(0=none; neg value makes relative to recdev_start)
-##--------------------------------------------------------------
-ctl1$recdev_early_start <- "#0"
-
-##--------------------------------------------------------------
-#_recdev_early_phase
-##--------------------------------------------------------------
-ctl1$recdev_early_phase <- "#-4"
-
-##--------------------------------------------------------------
-#_forecast_recruitment phase 
-#(incl. late recr) (0 value resets to maxphase+1)
-##--------------------------------------------------------------
-ctl1$Fcast_recr_phase <- "#0"
-```
-
-#### Sesgo
-\quad
-```{r}
-##--------------------------------------------------------------
-#_lambda for Fcast_recr_like occurring before endyr+1
-##--------------------------------------------------------------
-ctl1$lambda4Fcast_recr_like <-"#1"
-##--------------------------------------------------------------
-#_last_yr_nobias_adj_in_MPD; 
-#begin of ramp
-##--------------------------------------------------------------
-ctl1$last_early_yr_nobias_adj <-"#1900"
-##--------------------------------------------------------------
-#_first_yr_fullbias_adj_in_MPD; 
-#begin of plateau
-##--------------------------------------------------------------
-ctl1$first_yr_fullbias_adj <-"#1900"
-##--------------------------------------------------------------
-#_last_yr_fullbias_adj_in_MPD
-##--------------------------------------------------------------
-ctl1$last_yr_fullbias_adj <-"#2001"
-##--------------------------------------------------------------
-#_end_yr_for_ramp_in_MPD 
-#(can be in forecast to shape ramp, but SS3 sets bias_adj to 0.0 for fcast yrs)
-##--------------------------------------------------------------
-ctl1$first_recent_yr_nobias_adj <-"#2002"
-##--------------------------------------------------------------
-#_max_bias_adj_in_MPD 
-#(typical ~0.8; 
-#-3 sets all years to 0.0; 
-#-2 sets all non-forecast yrs w/ estimated recdevs to 1.0;
-#-1 sets biasadj=1.0 for all yrs w/ recdevs)
-##--------------------------------------------------------------
-ctl1$max_bias_adj<-"#1"
- 
-```
-
-#### Desvíos
-\quad
-```{r}
-#--------------------------------------------------
-#_period of cycles in recruitment (N parms read below)
-#--------------------------------------------------
-ctl1$period_of_cycles_in_recr <-"#0"
-#--------------------------------------------------
-#min rec_dev
-#--------------------------------------------------
-ctl1$min_rec_dev <- "#-5"
-#--------------------------------------------------
-#max rec_dev
-#--------------------------------------------------
-ctl1$max_rec_dev <- "#5"
-#--------------------------------------------------
-#_read_recdevs
-#--------------------------------------------------
-ctl1$N_Read_recdevs <- "#0"
-#--------------------------------------------------
-#_end of advanced SR options
-#--------------------------------------------------
-#
-#_placeholder for full parameter lines for recruitment cycles
-# read specified recr devs
-#_Yr Input_value
-#
-# all recruitment deviations
-#  1971R 1972R 1973R 1974R 1975R 1976R 1977R 1978R 1979R 1980R 1981R 1982R 1983R 1984R 1985R 
-#  1986R 1987R 1988R 1989R 1990R 1991R 1992R 1993R 1994R 1995R 1996R 1997R 1998R 1999R 2000R 
-#  2001R 2002F 2003F 2004F 2005F 2006F 2007F 2008F 2009F 2010F 2011F
-#  0.1268 -0.0629442 0.0998014 -0.174095 0.0306484 0.714818 -0.0228752 0.00379775 0.261267 
-#  0.173626 0.0900049 -0.226622 -0.439888 -0.312088 0.393112 0.551725 0.21891 0.154932 
-# -0.384786 0.596744 -0.682432 -0.273424 -0.829665 0.365024 -0.605267 0.455103 1.11072 
-# -0.546499 -0.656469 0.171606 -0.301581 0 0 0 0 0 0 0 0 0 0
-#
 ```
 \newpage
 
 ### Mortalidad por pesca
 
+[Consulte la Guía de usuario de SS3: 8.7 Fishing Mortality Method](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#fishing-mortality-method).
+
+
+- `F_ballpark`: F ballpark value in units of annual_F
+- `F_ballpark_year`: F ballpark year (neg value to disable)
+- `F_Method`: 1=Pope midseason rate; 2=F as parameter; 3=F as hybrid; 4=fleet-specific parm/hybrid (#4 is superset of #2 and #3 and is recommended)
+- `maxF`: max F (methods 2-4) or harvest fraction (method 1)
+- `F_iter`: N iterations for tuning in hybrid mode; recommend 3 (faster) to 5 (more precise if many fleets)
+
+
 ```{r}
 #--------------------------------------------------
-#Fishing Mortality info 
-#--------------------------------------------------
-#--------------------------------------------------
-
-#--------------------------------------------------
-# F ballpark value in units of annual_F
-#--------------------------------------------------
 ctl1$F_ballpark <- 0.1
-#--------------------------------------------------
-# F ballpark year (neg value to disable)
-#--------------------------------------------------
 ctl1$F_ballpark_year <- -2003
-#--------------------------------------------------
-# F_Method:  
-#--------------------------------------------------
-  #1=Pope midseason rate; 
-  #2=F as parameter; 
-  #3=F as hybrid; 
-  #4=fleet-specific parm/hybrid (#4 is superset of #2 and #3 and is recommended)
 ctl1$F_Method <- 3
+ctl1$maxF     <- 0.95
+ctl1$F_iter   <- 4
 #--------------------------------------------------
-# max F (methods 2-4) or harvest fraction (method 1)
-#--------------------------------------------------
-ctl1$maxF <- 0.95
-#--------------------------------------------------
-# N iterations for tuning in hybrid mode; 
-# recommend 3 (faster) to 5 (more precise if many fleets)
-#--------------------------------------------------
-ctl1$F_iter <- 4
-#
-#--------------------------------------------------
-#_initial_F_parms; 
-#--------------------------------------------------
-# for each fleet x season that has init_catch; 
-# nest season in fleet; 
-# count = 0
-#_for unconstrained init_F, use an arbitrary initial catch and set lambda=0 for its logL
-#_ LO HI INIT PRIOR PR_SD  PR_type  PHASE
-#
-#--------------------------------------------------
-# F rates by fleet x season
-#--------------------------------------------------
-# Yr:  1971 1972 1973 1974 1975 1976 1977 1978 1979 1980 1981 1982 1983 1984 1985 1986 
-#      1987 1988 1989 1990 1991 1992 1993 1994 1995 1996 1997 1998 1999 2000 2001 2002 
-#      2003 2004 2005 2006 2007 2008 2009 2010 2011
-# seas:  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-# FISHERY 0 0.00211081 0.010609 0.0107037 0.0217063 0.0333334 0.0459509 0.0599453 0.0757167
-#         0.107737 0.146876 0.162531 0.180868 0.202893 0.230365 0.266192 0.314644 0.338215 
-#         0.354481 0.356016 0.338877 0.238035 0.242891 0.250688 0.26355 0.283377 0.227156 
-#         0.238194 0.247552 0.252337 0.253174 0.0129829 0.0279253 0.038022 0.0447387 
-#         0.0493313 0.0527091 0.0554663 0.0579281 0.0602317 0.0624094
-#
 ```
 
 \newpage
 ### Capturabilidad
 
-#### Opciones de capturabilidad
-\quad
+[Consulte la Guía de usuario de SS3: 8.8 Catchability](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#catchability).
+
+
+
+### Opciones de capturabilidad por flota (CPUE o CAMPAÑAS)
+
+ - `fleet`: number
+ - `link type`: (1=simple q, 1 parm;2=mirror simple q, 1 mirrored parm;3=q and power, 2 parm;4=mirror with offset, 2 parm)
+ - `link_info`: extra input for link, i.e. mirror fleet# or dev index number
+ - `extra_se` : 0/1 to select extra sd parameter
+ - `biasadj`  : 0/1 for biasadj or not
+ - `float`    : 0/1 to float
+
+
 ```{r}
-#--------------------------------------------------
-#_Q_setup for fleets with cpue or survey data
-#--------------------------------------------------
-#_1:  fleet number
-#_2:  link type: (
-                 #1=simple q, 1 parm; 
-                 #2=mirror simple q, 1 mirrored parm; 
-                 #3=q and power, 2 parm; 
-                 #4=mirror with offset, 2 parm)
-#_3:  extra input for link, i.e. mirror fleet# or dev index number
-#_4:  0/1 to select extra sd parameter
-#_5:  0/1 for biasadj or not
-#_6:  0/1 to float
-#_fleet_link_link_info_extra_se_biasadj_float #  fleetname
 #---------------------------------------------
-Q_options1<-data.frame(row.names="SURVEY1",
-                       "fleet"     = 2,
+Q_options1<-data.frame("fleet"     = 2,
                        "link"      = 1,
                        "link_info" = 0,
                        "extra_se"  = 0,
                        "biasadj"   = 0,
                        "float"     = 0) 
-#---------------------------------------------
 ctl1$Q_options[1,]<-Q_options1
-#---------------------------------------------
-Q_options2<-data.frame(row.names="SURVEY2",
-                       "fleet"     = 3,
-                       "link"      = 1,
-                       "link_info" = 0,
-                       "extra_se"  = 0,
-                       "biasadj"   = 0,
-                       "float"     = 0) 
-#---------------------------------------------
-ctl1$Q_options[2,]<-Q_options2
-#---------------------------------------------
-Q_options3<-data.frame(row.names="SURVEY3",
-                       "fleet"     = 4,
-                       "link"      = 1,
-                       "link_info" = 0,
-                       "extra_se"  = 0,
-                       "biasadj"   = 0,
-                       "float"     = 0) 
-#---------------------------------------------
-ctl1$Q_options[3,]<-Q_options3
-#---------------------------------------------
+rownames(ctl1$Q_options)[1]<-"SURVEY1"
+
 ```
 
 #### Parámetros
 \quad
 ```{r}
 #--------------------------------------------------
-#_Q_parms(if_any);
-# Qunits_are_ln(q)
-#--------------------------------------------------
-#_LO_HI_INIT_PRIOR_PR_SD_PR_type_PHASE_env-var_use_dev_dev_mnyr_dev_mxyr_dev_PH_Block_Blk_Fxn#parm_name
-#--------------------------------------------------
-Q_parms1<-data.frame(row.names="LnQ_base_SURVEY1(2)",
-                      "LO"           = -7,
+Q_parms1<-data.frame( "LO"           = -7,
                       "HI"           = 5,
                       "INIT"         = 0.516018,
                       "PRIOR"        = 0,
@@ -2459,175 +1826,95 @@ Q_parms1<-data.frame(row.names="LnQ_base_SURVEY1(2)",
                       "dev_PH"       = 0,
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
-#---------------------------------------------
 ctl1$Q_parms[1,]<-Q_parms1
+rownames(ctl1$Q_parms)[1]<-"LnQ_base_SURVEY1(2)"
 #--------------------------------------------------
-Q_parms2<-data.frame(row.names="LnQ_base_SURVEY2(3)",
-                      "LO"           = -7,
-                      "HI"           = 5,
-                      "INIT"         = 0.516018,
-                      "PRIOR"        = 0,
-                      "PR_SD"        = 1,
-                      "PR_type"      = 0,
-                      "PHASE"        = 1,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-#---------------------------------------------
-ctl1$Q_parms[2,]<-Q_parms2
-#--------------------------------------------------
-Q_parms3<-data.frame(row.names="LnQ_base_SURVEY2(4)",
-                      "LO"           = -7,
-                      "HI"           = 5,
-                      "INIT"         = -6.628100,
-                      "PRIOR"        = 0,
-                      "PR_SD"        = 1,
-                      "PR_type"      = 0,
-                      "PHASE"        = 1,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-#---------------------------------------------
-ctl1$Q_parms[3,]<-Q_parms3
-
-#--------------------------------------------------
-#_no timevary Q parameters
-#--------------------------------------------------
-#
 ```
 
 \newpage
 ### Selectividad
 
-#### tipos de patrones de selectividad a la talla
-\quad
+[Consulte la Guía de usuario de SS3: 8.9 Selectivity and Discard](https://nmfs-stock-synthesis.github.io/doc/SS330_User_Manual.html#selectivity-and-discard).
+
+
+[ayuda con parámetros de selectividad](https://connect.fisheries.noaa.gov/ss3-helper/)
+
+### tipos de selectividad a la talla
+
+- Pattern:_0;  parm=0; selex=1.0 for all sizes
+- Pattern:_1;  parm=2; logistic; with 95% width specification
+- Pattern:_5;  parm=2; mirror another size selex; PARMS pick the min-max bin to mirror
+- Pattern:_11; parm=2; selex=1.0  for specified min-max population length bin range
+- Pattern:_15; parm=0; mirror another age or length selex
+- Pattern:_6;  parm=2+special; non-parm len selex
+- Pattern:_43; parm=2+special+2;  like 6, with 2 additional param for scaling (average over bin range)
+- Pattern:_8;  parm=8; double_logistic with smooth transitions and constant above Linf option
+- Pattern:_9;  parm=6; simple 4-parm double logistic with starting length; parm 5 is first length; parm 6=1 does desc as offset
+- Pattern:_21; parm=2+special; non-parm len selex, read as pairs of size, then selex
+- Pattern:_22; parm=4; double_normal as in CASAL
+- Pattern:_23; parm=6; double_normal where final value is directly equal to sp(6) so can be >1.0
+- Pattern:_24; parm=6; double_normal with sel(minL) and sel(maxL), using joiners
+- Pattern:_2;  parm=6; double_normal with sel(minL) and sel(maxL), using joiners,back compatibile version of 24 with 3.30.18 and older
+- Pattern:_25; parm=3; exponential-logistic in length
+- Pattern:_27; parm=special+3;cubic spline in length;parm1==1 resets knots;parm1==2 resets all 
+- Pattern:_42; parm=special+3+2;cubic spline;like 27, with 2 additional param for scaling (average over bin range)
+- discard_options:_0=none;_1=define_retention;_2=retention&mortality;_3=all_discarded_dead;_4=define_dome-shaped_retention
+                 
+
 ```{r}
 #--------------------------------------------------
-#_size_selex_patterns
-#--------------------------------------------------
-#Pattern:_0;  parm=0; selex=1.0 for all sizes
-#Pattern:_1;  parm=2; logistic; with 95% width specification
-#Pattern:_5;  parm=2; mirror another size selex; PARMS pick the min-max bin to mirror
-#Pattern:_11; parm=2; selex=1.0  for specified min-max population length bin range
-#Pattern:_15; parm=0; mirror another age or length selex
-#Pattern:_6;  parm=2+special; non-parm len selex
-#Pattern:_43; parm=2+special+2;  like 6, with 2 additional param for scaling (average over bin range)
-#Pattern:_8;  parm=8; double_logistic with smooth transitions and constant above Linf option
-#Pattern:_9;  parm=6; simple 4-parm double logistic with starting length; 
-                      #parm 5 is first length; 
-                      #parm 6=1 does desc as offset
-#Pattern:_21; parm=2+special; non-parm len selex, read as pairs of size, then selex
-#Pattern:_22; parm=4; double_normal as in CASAL
-#Pattern:_23; parm=6; double_normal where final value is directly equal to sp(6) so can be >1.0
-#Pattern:_24; parm=6; double_normal with sel(minL) and sel(maxL), using joiners
-#Pattern:_2;  parm=6; double_normal with sel(minL) and sel(maxL), using joiners, 
-                      #back compatibile version of 24 with 3.30.18 and older
-#Pattern:_25; parm=3; exponential-logistic in length
-#Pattern:_27; parm=special+3; 
-              #cubic spline in length; 
-              #parm1==1 resets knots; 
-              #parm1==2 resets all 
-#Pattern:_42; parm=special+3+2; 
-              #cubic spline; 
-              #like 27, with 2 additional param for scaling (average over bin range)
-#_discard_options:_0=none;
-                 #_1=define_retention;
-                 #_2=retention&mortality;
-                 #_3=all_discarded_dead;
-                 #_4=define_dome-shaped_retention
-#--------------------------------------------------
-#_Pattern Discard Male Special
-#--------------------------------------------------
-size_selex_types1<-data.frame(row.names="FISHERY",
-                              "Pattern" = 1,
+size_selex_types1<-data.frame("Pattern" = 1,
                               "Discard" = 0,
                               "Male"    = 0,
                               "Special" = 0)
 ctl1$size_selex_types[1,]<-size_selex_types1
+rownames(ctl1$size_selex_types)[1]<-"FISHERY"
 #--------------------------------------------------
-size_selex_types2<-data.frame(row.names="SURVEY1",
-                              "Pattern" = 1,
+size_selex_types2<-data.frame("Pattern" = 1,
                               "Discard" = 0,
                               "Male"    = 0,
                               "Special" = 0)
 ctl1$size_selex_types[2,]<-size_selex_types2
-#--------------------------------------------------
-size_selex_types3<-data.frame(row.names="SURVEY2",
-                              "Pattern" = 0,
-                              "Discard" = 0,
-                              "Male"    = 0,
-                              "Special" = 0)
-ctl1$size_selex_types[3,]<-size_selex_types3
-#--------------------------------------------------
-size_selex_types4<-data.frame(row.names="SURVEY3",
-                              "Pattern" = 0,
-                              "Discard" = 0,
-                              "Male"    = 0,
-                              "Special" = 0)
-ctl1$size_selex_types[4,]<-size_selex_types4
+rownames(ctl1$size_selex_types)[2]<-"SURVEY1"
 #--------------------------------------------------
 ```
 
-#### tipos de patrones de selectividad a la edad
-\quad
+### tipos de selectividad a la edad
+
+
+- Pattern:_0; parm=0; selex=1.0 for ages 0 to maxage
+- Pattern:_10; parm=0; selex=1.0 for ages 1 to maxage
+- Pattern:_11; parm=2; selex=1.0  for specified min-max age
+- Pattern:_12; parm=2; age logistic
+- Pattern:_13; parm=8; age double logistic. Recommend using pattern 18 instead.
+- Pattern:_14; parm=nages+1; age empirical
+- Pattern:_15; parm=0; mirror another age or length selex
+- Pattern:_16; parm=2; Coleraine - Gaussian
+- Pattern:_17; parm=nages+1; empirical as random walk  N parameters to read can be overridden by setting special to non-zero
+- Pattern:_41; parm=2+nages+1; // like 17, with 2 additional param for scaling (average over bin range)
+- Pattern:_18; parm=8; double logistic - smooth transition
+- Pattern:_19; parm=6; simple 4-parm double logistic with starting age
+- Pattern:_20; parm=6; double_normal,using joiners
+- Pattern:_26; parm=3; exponential-logistic in age
+- Pattern:_27; parm=3+special; cubic spline in age; parm1==1 resets knots; parm1==2 resets all 
+- Pattern:_42; parm=2+special+3; // cubic spline; with 2 additional param for scaling (average over bin range)
+- Age patterns entered with value >100 create Min_selage from first digit and pattern from remainder
+
 ```{r}
 #--------------------------------------------------
-#_age_selex_patterns
-#--------------------------------------------------
-#Pattern:_0; parm=0; selex=1.0 for ages 0 to maxage
-#Pattern:_10; parm=0; selex=1.0 for ages 1 to maxage
-#Pattern:_11; parm=2; selex=1.0  for specified min-max age
-#Pattern:_12; parm=2; age logistic
-#Pattern:_13; parm=8; age double logistic. Recommend using pattern 18 instead.
-#Pattern:_14; parm=nages+1; age empirical
-#Pattern:_15; parm=0; mirror another age or length selex
-#Pattern:_16; parm=2; Coleraine - Gaussian
-#Pattern:_17; parm=nages+1; empirical as random walk  N parameters to read can be overridden by setting special to non-zero
-#Pattern:_41; parm=2+nages+1; // like 17, with 2 additional param for scaling (average over bin range)
-#Pattern:_18; parm=8; double logistic - smooth transition
-#Pattern:_19; parm=6; simple 4-parm double logistic with starting age
-#Pattern:_20; parm=6; double_normal,using joiners
-#Pattern:_26; parm=3; exponential-logistic in age
-#Pattern:_27; parm=3+special; cubic spline in age; parm1==1 resets knots; parm1==2 resets all 
-#Pattern:_42; parm=2+special+3; // cubic spline; with 2 additional param for scaling (average over bin range)
-#Age patterns entered with value >100 create Min_selage from first digit and pattern from remainder
-#_Pattern Discard Male Special
-#--------------------------------------------------
-age_selex_types1<-data.frame(row.names="FISHERY",
-                              Pattern = 11,
+age_selex_types1<-data.frame( Pattern = 11,
                               Discard = 0,
                               Male    = 0,
                               Special = 0)
 ctl1$age_selex_types[1,]<-age_selex_types1
+rownames(ctl1$age_selex_types)[1]<-"FISHERY"
 #--------------------------------------------------
-age_selex_types2<-data.frame(row.names="SURVEY1",
-                              Pattern = 11,
+age_selex_types2<-data.frame( Pattern = 11,
                               Discard = 0,
                               Male    = 0,
                               Special = 0)
 ctl1$age_selex_types[2,]<-age_selex_types2
-#--------------------------------------------------
-age_selex_types3<-data.frame(row.names="SURVEY2",
-                              Pattern = 11,
-                              Discard = 0,
-                              Male    = 0,
-                              Special = 0)
-ctl1$age_selex_types[3,]<-age_selex_types3
-#--------------------------------------------------
-age_selex_types4<-data.frame(row.names="SURVEY3",
-                              Pattern = 11,
-                              Discard = 0,
-                              Male    = 0,
-                              Special = 0)
-ctl1$age_selex_types[4,]<-age_selex_types4
+rownames(ctl1$age_selex_types)[2]<-"SURVEY1"
 #--------------------------------------------------
 ctl1$age_selex_types
 ```
@@ -2635,13 +1922,8 @@ ctl1$age_selex_types
 #### parametros de selectividad a la talla
 \quad
 ```{r}
-#
-#_LO_HI_INIT_PRIOR_PR_SD_PR_type_PHASE_env-var_use_dev-dev_mnyr-dev_mxyr-dev_PH-Block-Blk_Fxn#parm_name
 #--------------------------------------------------
-# 1   FISHERY LenSelex
-#--------------------------------------------------
-size_selex_parms1<-data.frame(row.names="SizeSel_P_1_FISHERY(1)",
-                      "LO"           = 19.00,
+size_selex_parms1<-data.frame("LO"           = 19.00,
                       "HI"           = 80,
                       "INIT"         = 53.64110,
                       "PRIOR"        = 50,
@@ -2656,9 +1938,9 @@ size_selex_parms1<-data.frame(row.names="SizeSel_P_1_FISHERY(1)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$size_selex_parms[1,]<-size_selex_parms1
+rownames(ctl1$size_selex_parms)[1]<-"SizeSel_P_1_FISHERY(1)"
 #--------------------------------------------------
-size_selex_parms2<-data.frame(row.names="SizeSel_P_2_FISHERY(1)",
-                      "LO"           = 0.01,
+size_selex_parms2<-data.frame("LO"           = 0.01,
                       "HI"           = 60,
                       "INIT"         = 18.92320,
                       "PRIOR"        = 15,
@@ -2673,9 +1955,9 @@ size_selex_parms2<-data.frame(row.names="SizeSel_P_2_FISHERY(1)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$size_selex_parms[2,]<-size_selex_parms2
+rownames(ctl1$size_selex_parms)[2]<-"SizeSel_P_2_FISHERY(1)"
 #--------------------------------------------------
-size_selex_parms3<-data.frame(row.names="SizeSel_P_1_SURVEY1(2)",
-                      "LO"           = 19.00,
+size_selex_parms3<-data.frame("LO"           = 19.00,
                       "HI"           = 70,
                       "INIT"         = 36.65300,
                       "PRIOR"        = 30,
@@ -2690,6 +1972,7 @@ size_selex_parms3<-data.frame(row.names="SizeSel_P_1_SURVEY1(2)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$size_selex_parms[3,]<-size_selex_parms3
+rownames(ctl1$size_selex_parms)[3]<-"SizeSel_P_1_SURVEY1(2)"
 #--------------------------------------------------
 size_selex_parms4<-data.frame(row.names="SizeSel_P_2_SURVEY1(2)",
                       "LO"           = 0.01,
@@ -2707,7 +1990,8 @@ size_selex_parms4<-data.frame(row.names="SizeSel_P_2_SURVEY1(2)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$size_selex_parms[4,]<-size_selex_parms4
-
+rownames(ctl1$size_selex_parms)[4]<-"SizeSel_P_2_SURVEY1(2)"
+#--------------------------------------------------
 ctl1$size_selex_parms
 ```
 
@@ -2715,8 +1999,7 @@ ctl1$size_selex_parms
 \quad
 ```{r}
 #--------------------------------------------------
-age_selex_parms1<-data.frame(row.names="AgeSel_P_1_FISHERY(1)",
-                      "LO"            = 0,
+age_selex_parms1<-data.frame("LO"            = 0,
                       "HI"            = 40,
                       "INIT"          = 0,
                       "PRIOR"         = 5,
@@ -2731,9 +2014,9 @@ age_selex_parms1<-data.frame(row.names="AgeSel_P_1_FISHERY(1)",
                       "Block"         = 0,
                       "Block_Fxn"     = 0)
 ctl1$age_selex_parms[1,]<-age_selex_parms1
+rownames(ctl1$age_selex_parms)[1]<-"AgeSel_P_1_FISHERY(1)"
 #--------------------------------------------------
-age_selex_parms2<-data.frame(row.names="AgeSel_P_2_FISHERY(1)",
-                      "LO"           = 0,
+age_selex_parms2<-data.frame("LO"           = 0,
                       "HI"           = 40,
                       "INIT"         = 40,
                       "PRIOR"        = 6,
@@ -2748,6 +2031,7 @@ age_selex_parms2<-data.frame(row.names="AgeSel_P_2_FISHERY(1)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$age_selex_parms[2,]<-age_selex_parms2
+rownames(ctl1$age_selex_parms)[2]<-"AgeSel_P_2_FISHERY(1)"
 #--------------------------------------------------
 age_selex_parms3<-data.frame(row.names="AgeSel_P_1_SURVEY1(2)",
                       "LO"           = 0,
@@ -2765,6 +2049,7 @@ age_selex_parms3<-data.frame(row.names="AgeSel_P_1_SURVEY1(2)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$age_selex_parms[3,]<-age_selex_parms3
+rownames(ctl1$age_selex_parms)[3]<-"AgeSel_P_1_SURVEY1(2)"
 #--------------------------------------------------
 age_selex_parms4<-data.frame(row.names="AgeSel_P_2_SURVEY1(2)",
                       "LO"           = 0,
@@ -2782,131 +2067,42 @@ age_selex_parms4<-data.frame(row.names="AgeSel_P_2_SURVEY1(2)",
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
 ctl1$age_selex_parms[4,]<-age_selex_parms4
-#--------------------------------------------------
-age_selex_parms5<-data.frame(row.names="AgeSel_P_1_SURVEY2(3)",
-                      "LO"           = 0,
-                      "HI"           = 40,
-                      "INIT"         = 0,
-                      "PRIOR"        = 5,
-                      "PR_SD"        = 99,
-                      "PR_type"      = 0,
-                      "PHASE"        = -99,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-ctl1$age_selex_parms[5,]<-age_selex_parms5
-#--------------------------------------------------
-age_selex_parms6<-data.frame(row.names="AgeSel_P_2_SURVEY2(3)",
-                      "LO"           = 0,
-                      "HI"           = 40,
-                      "INIT"         = 0,
-                      "PRIOR"        = 6,
-                      "PR_SD"        = 99,
-                      "PR_type"      = 0,
-                      "PHASE"        = -99,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_miny"     = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-ctl1$age_selex_parms[6,]<-age_selex_parms6
+rownames(ctl1$age_selex_parms)[4]<-"AgeSel_P_2_SURVEY1(2)"
 #--------------------------------------------------
 ctl1$age_selex_parms
 ```
 
 \newpage
 
-#### otros parámetros ??? REVISAR
+### otros parámetros
 \quad
+
+- `Use_2D_AR1_selectivity`: use 2D_AR1 selectivity(0/1)
+- `TG_custom`: 0=no read and autogen if tag data exist; 1=read
+- `DoVar_adjust`: 1= add_to_survey_CV; 2=add_to_discard_stddev; 3=add_to_bodywt_CV; 4=mult_by_lencomp_N; 5=mult_by_agecomp_N; 6=mult_by_size-at-age_N; 7=mult_by_generalized_sizecomp
+- `Variance_adjustment_list`: 
+- `maxlambdaphase`:
+- `sd_offset`: must be 1 if any growthCV, sigmaR, or survey extraSD is an estimated parameter
+- `maxlambdaphase`: 
+- `sd_offset`:
+- `lambdas`:
+- `N_lambdas`: 
+- `more_stddev_reporting`: 
+- `stddev_reporting_specs`:
+- `stddev_reporting_selex`: 
+- `stddev_reporting_growth`: 
+- `stddev_reporting_N_at_A`: 
+
 ```{r}
-#_No_Dirichlet parameters
-#_no timevary selex parameters
-#
-#--------------------------------------------------
-#  use 2D_AR1 selectivity(0/1)
-#--------------------------------------------------
+
 ctl1$Use_2D_AR1_selectivity <-0
-
-#--------------------------------------------------
-#_no 2D_AR1 selex offset used
-#
-#--------------------------------------------------
-# Tag loss and Tag reporting parameters go next
-#--------------------------------------------------
-# TG_custom:  
-#--------------------------------------------------
-   # 0=no read and autogen if tag data exist; 
-   # 1=read
 ctl1$TG_custom <- 0
-
-#--------------------------------------------------
-#_Cond -6 6 1 1 2 0.01 -4 0 0 0 0 0 0 0  #_placeholder if no parameters
-#
-# no timevary parameters
-#
-#
-#--------------------------------------------------
-# Input variance adjustments factors: 
-#--------------------------------------------------
- #_1=add_to_survey_CV
- #_2=add_to_discard_stddev
- #_3=add_to_bodywt_CV
- #_4=mult_by_lencomp_N
- #_5=mult_by_agecomp_N
- #_6=mult_by_size-at-age_N
- #_7=mult_by_generalized_sizecomp
- #_Factor  Fleet  Value
 ctl1$DoVar_adjust <- 0
-
-#--------------------------------------------------
-#_maxlambdaphase
-#--------------------------------------------------
 ctl1$maxlambdaphase <- 4
-
-#--------------------------------------------------
-#_sd_offset; 
-#--------------------------------------------------
-# must be 1 if any growthCV, sigmaR, or survey extraSD is an estimated parameter
 ctl1$sd_offset <- 1
-```
-
-### Lambdas
-
-```{r}
-#--------------------------------------------------
-# read 3 changes to default Lambdas (default value is 1.0)
-#--------------------------------------------------
 ctl1$N_lambdas <- 3
 
-#--------------------------------------------------
-# Like_comp codes:  
-#--------------------------------------------------
-   # 1=surv; 
-   # 2=disc; 
-   # 3=mnwt; 
-   # 4=length; 
-   # 5=age; 
-   # 6=SizeFreq; 
-   # 7=sizeage; 
-   # 8=catch; 
-   # 9=init_equ_catch; 
-   # 10=recrdev; 
-   # 11=parm_prior; 
-   # 12=parm_dev; 
-   # 13=CrashPen; 
-   # 14=Morphcomp; 
-   # 15=Tag-comp; 
-   # 16=Tag-negbin; 
-   # 17=F_ballpark; 
-   # 18=initEQregime
-#----------------------------------------------------------------------
-#like_comp fleet  phase  value  sizefreq_method
+
 #----------------------------------------------------------------------
 lambdas1<-data.frame(row.names="Surv_SURVEY1_Phz2",
                      like_comp=1,
@@ -2934,33 +2130,8 @@ ctl1$lambdas[3,]<-lambdas3
 #----------------------------------------------------------------------
 ctl1$lambdas
 #----------------------------------------------------------------------
-```
-
-\newpage
-
-**REVISAR ESTA PARTE**
-
-### more stddev reporting
-```{r}
-# (0/1/2) read specs for more stddev reporting: 
-# 0 = skip, 
-# 1 = read specs for reporting stdev for selectivity, size, and numbers, 
-# 2 = add options for M,Dyn. Bzero, SmryBio
 ctl1$more_stddev_reporting <- 1
 
-```
-
-#### specs ?
-\quad
-```{r}
-#--------------------------------------------------
-# Selectivity: 
-#--------------------------------------------------
-# (1) 0 to skip or fleet, 
-# (2) 1=len/2=age/3=combined, 
-# (3) year, 
-# (4) N selex bins; 
-#NOTE: combined reports in age bins
 #--------------------------------------------------
 stddev_reporting_specs1<-data.frame(matrix(c(1,1,-1,5,1,5,1,-1,5),
                                            nrow=1,
@@ -2968,17 +2139,7 @@ stddev_reporting_specs1<-data.frame(matrix(c(1,1,-1,5,1,5,1,-1,5),
 colnames(stddev_reporting_specs1)<-paste("stddev_reporting_specs_",seq(1,9,1),sep="")
 
 ctl1$stddev_reporting_specs<-stddev_reporting_specs1  
-```
 
-#### Crecimiento
-\quad
-```{r}
-#--------------------------------------------------
-# Growth: 
-#--------------------------------------------------
-#(1) 0 to skip or growth pattern, 
-#(2) growth ages; 
-#NOTE: does each sex
 #--------------------------------------------------
 stddev_reporting_growth1<-data.frame(matrix(c(1,2,14,26,40),
                                            nrow=1,
@@ -2986,18 +2147,6 @@ stddev_reporting_growth1<-data.frame(matrix(c(1,2,14,26,40),
 colnames(stddev_reporting_growth1)<-paste("stddev_reporting_growth_",seq(1,5,1),sep="")
 
 ctl1$stddev_reporting_growth <-stddev_reporting_growth1
-```
-
-#### Abundancia a la edad
-\quad
-```{r}
-#--------------------------------------------------
-# Numbers-at-age: 
-#--------------------------------------------------
-#(1) 0 or area(-1 for all), 
-#(2) year, 
-#(3) N ages;  
-#NOTE: sums across morphs
 #--------------------------------------------------
 stddev_reporting_N_at_A1<-data.frame(matrix(c(1,2,14,26,40),
                                            nrow=1,
@@ -3005,13 +2154,6 @@ stddev_reporting_N_at_A1<-data.frame(matrix(c(1,2,14,26,40),
 colnames(stddev_reporting_N_at_A1)<-paste("stddev_reporting_N_at_A_",seq(1,5,1),sep="")
 
 ctl1$stddev_reporting_N_at_A <- stddev_reporting_N_at_A1
-```
-
-#### Selectividad
-\quad
-```{r}
-#--------------------------------------------------
-# vector with selex std bins (-1 in first bin to self-generate)
 #--------------------------------------------------
 stddev_reporting_selex1<-data.frame(matrix(c(5,15,25,35,43),
                                            nrow=1,
@@ -3022,7 +2164,7 @@ ctl1$stddev_reporting_selex <- stddev_reporting_selex1
 ```
 
 
-\newpage
+
 
 ###  Escribir archivo de control modificado con la función  `SS_write` para el enfoque de modelación `SS3`
 ```{r eval=T}
