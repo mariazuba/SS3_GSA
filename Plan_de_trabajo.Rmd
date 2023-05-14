@@ -189,7 +189,7 @@ Revisamos los nombres de los componentes de la lista del archivo .dat
 
 dat <- r4ss::SS_readdat(here(dirname.base,"data.ss")) #base
 dat1<-dat # para modificar
-#names(dat1) # muestra los objetos de la lista
+names(dat1) # muestra los objetos de la lista
 ```
 
 
@@ -243,24 +243,22 @@ Primero ingresamos las especificaciones de los Datos de captura de la flota
 
 #### Especificaciones de datos de captura
 \quad
+`fleetinfo` es una matriz donde se ingresan las especificaciones de los datos de captura y debe contener la siguiente información:
+
+- `type`: **1**=catch fleet; **2**=bycatch only fleet; **3**=survey; **4**=ignore 
+- `surveytiming`: -1 for fishing fleet to use season-long catch-at-age for observations, or 1 to use observation month;  (always 1 for surveys)
+- `area`:  area the fleet/survey operates in 
+- `units`:  **1**=bio; **2**=num (ignored for surveys; their units read later)
+- `need_catch_mult`: **0**=no; **1**=yes
+- `fleetname`: 
+
 ```{r}
-#---------------------------------------------------------------------------------
-#_fleet_type: 1=catch fleet; 2=bycatch only fleet; 3=survey; 4=ignore 
-#_sample_timing: -1 for fishing fleet to use season-long catch-at-age for 
-#observations, or 1 to use observation month;  (always 1 for surveys)
-#_fleet_area:  area the fleet/survey operates in 
-#_units of catch:  1=bio; 2=num (ignored for surveys; their units read later)
-#_catch_mult: 0=no; 1=yes
-#_rows are fleets
-#_fleet_type fishery_timing area catch_units need_catch_mult fleetname
-#---------------------------------------------------------------------------------
-# Arreglo de datos
-fleetnames1<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")     
-type1<-c(1,3,3,3)
-surveytiming1<-c(-1,1,1,1)
-units_of_catch1<-c(1,2,2,2) 
-areas1<-c(1,1,1,1) 
-need_catch_mult1<-c(0,0,0,0)
+fleetnames1<-c("FISHERY", "SURVEY1")     
+type1<-c(1,3)
+surveytiming1<-c(-1,1)
+units_of_catch1<-c(1,2) 
+areas1<-c(1,1) 
+need_catch_mult1<-c(0,0)
 #---------------------------------------------------------------------------------
 # crear data.frame 
 fleetinfo1<-data.frame(type = type1,
@@ -430,34 +428,14 @@ A continuación, se podrían especificar los datos de descartes y tallas media.
 #### Descarte
 \quad
 ```{r}
-dat1$N_discard_fleets<-0 #_N_fleets_with_discard
-#---------------------------------------------------------------------------------
-#_discard_units (1=same_as_catchunits(bio/num); 
-#                2=fraction; 
-#                3=numbers)
-#_discard_errtype:  >0 for DF of T-dist(read CV below); 
-#                    0 for normal with CV; 
-#                   -1 for normal with se; 
-#                   -2 for lognormal; 
-#                   -3 for trunc normal with CV
-# note: only enter units and errtype for fleets with discard 
-# note: discard data is the total for an entire season, so input of month
-#       here must be to a month in that season
-#_Fleet units errtype
-#---------------------------------------------------------------------------------
-# -9999 0 0 0.0 0.0 # terminator for discard data 
+dat1$N_discard_fleets<-0 
 ```
 
 #### Tallas medias
 \quad
 ```{r}
-dat1$use_meanbodywt<-0 #_use meanbodysize_data (0/1)
-#---------------------------------------------------------------------------------
-#_COND_0 #_DF_for_meanbodysize_T-distribution_like
-# note:  type=1 for mean length; type=2 for mean body weight 
-#_yr month fleet part type obs stderr
-#---------------------------------------------------------------------------------
-#  -9999 0 0 0 0 0 0 # terminator for mean body size data 
+dat1$use_meanbodywt<-0 
+
 ```
 
 \newpage
@@ -559,47 +537,36 @@ Esto debe especificarse ya sea que se utilicen o no datos de composiciones de ta
 ```{r}
 # set up population length bin structure (note - irrelevant if not using size 
 #data and using empirical wtatage
-dat1$lbin_method<-2     # length bin method:1=use databins; 
-                        # 2=generate from binwidth,min,max below;
-                        # 3=read vector
-dat1$binwidth<-2        # binwidth for population size comp 
-dat1$minimum_size<-10   # minimum size in the population 
-                        # (lower edge of first bin and size at age 0.00) 
-dat1$maximum_size<-70   # maximum size in the population (lower edge of last bin) 
-                        # Valor asumido, Revisar!!! aunque no se usan datos de tallas 
-                        # en este recurso.
-dat1$use_lencomp<-0     # use length composition data (0/1)
+dat1$lbin_method  <-2     
+dat1$binwidth     <-2        
+dat1$minimum_size <-10  
+dat1$maximum_size <-70   
+dat1$use_lencomp  <-0     
 ```
 
 Después de los intervalos de tallas de la población está la especificación para la composición de tallas (asumiendo 1 línea por flota):
 
 #### Especificación composición de tallas
 \quad
+`len_info` es una matriz que contiene la siguiente información:
+
+- `mintailcomp`:  upper and lower distribution for females and males separately are accumulated until exceeding this level.
+- `addtocomp`:    after accumulation of tails; this value added to all bins
+- `combM+F`:      males and females treated as combined gender below this bin number 
+- `compressbins`: accumulate upper tail by this number of bins; acts simultaneous with mintailcomp; set=0 for no forced accumulation
+- `Comp_Error`:   0=multinomial, 1=dirichlet using Theta*n, 2=dirichlet using beta,3=MV_Tweedie
+- `ParmSelect`:   consecutive index for dirichlet or MV_Tweedie
+- `minsamplesize`: minimum sample size; set to 1 to match 3.24, minimum value is 0.001
+
+
 ```{r}
-#---------------------------------------------------------------------------------
-#_mintailcomp:  upper and lower distribution for females and males separately are 
-#               accumulated until exceeding this level.
-#_addtocomp:    after accumulation of tails; this value added to all bins
-#_combM+F:      males and females treated as combined gender below this bin number 
-#_compressbins: accumulate upper tail by this number of bins; acts simultaneous with
-#               mintailcomp; set=0 for no forced accumulation
-#_Comp_Error:   0=multinomial, 
-#               1=dirichlet using Theta*n, 
-#               2=dirichlet using beta, 
-#               3=MV_Tweedie
-#_ParmSelect:  consecutive index for dirichlet or MV_Tweedie
-#_minsamplesize: minimum sample size; set to 1 to match 3.24, minimum value is 0.001
-#
-#_mintailcomp addtocomp combM+F CompressBins CompError ParmSelect minsamplesize
-#---------------------------------------------------------------------------------
-# Arreglo de datos
-len_info_mintailcomp<-rep(-1,4)
-len_info_addtocomp<-rep(0.001,4)
-len_info_combine_M_F<-rep(0,4)
-len_info_CompressBins<-rep(0,4)
-len_info_CompError<-rep(0,4)
-len_info_ParmSelect<-rep(0,4)
-len_info_minsamplesize<-rep(1,4)
+len_info_mintailcomp<-rep(-1,2)
+len_info_addtocomp<-rep(0.001,2)
+len_info_combine_M_F<-rep(0,2)
+len_info_CompressBins<-rep(0,2)
+len_info_CompError<-rep(0,2)
+len_info_ParmSelect<-rep(0,2)
+len_info_minsamplesize<-rep(1,2)
 #---------------------------------------------------------------------------------
 # crear data.frame 
 len_info1<-data.frame(mintailcomp=len_info_mintailcomp,
@@ -610,7 +577,7 @@ len_info1<-data.frame(mintailcomp=len_info_mintailcomp,
                         ParmSelect=len_info_ParmSelect,
                         minsamplesize=len_info_minsamplesize)
 
-row.names(len_info1)<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")
+row.names(len_info1)<-c("FISHERY", "SURVEY1")
 #---------------------------------------------------------------------------------
 dat1$len_info<-len_info1 #data.frame
 dat1$len_info
@@ -626,15 +593,16 @@ dat1$lbin_vector<-seq(20,70,2)
 
 #### Datos de composición de tallas
 \quad
+`lencomp` es una matriz que contiene la siguiente información:
+
+- `Yr`:
+- `Seas`:
+- `FltSvy`:
+- `Gender`: sex codes:  0=combined; 1=use female only; 2=use male only; 3=use both as joint sexxlength distribution
+- `Part`: partition codes:  (0=combined; 1=discard; 2=retained
+- `Nsamp`:
+
 ```{r}
-#---------------------------------------------------------------------------------
-# sex codes:  0=combined; 
-#             1=use female only; 
-#             2=use male only; 
-#             3=use both as joint sexxlength distribution
-# partition codes:  (0=combined; 
-#                    1=discard; 
-#                    2=retained
 #---------------------------------------------------------------------------------
 # Arreglo de datos
 new_lencomp <- data.frame(Yr = "# -9999", 
@@ -751,33 +719,28 @@ dat1$ageerror
 
 #### Especificaciones de los datos de composicion de edad
 \quad
+
+`age_info` es una matriz que contiene las especificaciones de los datos de composición de edad. A continuación se detalla el contenido de esta matriz:
+
+- `mintailcomp`:  upper and lower distribution for females and males separately are accumulated until exceeding this level.
+- `addtocomp`:    after accumulation of tails; this value added to all bins
+- `combM+F`:      males and females treated as combined gender below this bin number 
+- `compressbins`: accumulate upper tail by this number of bins; acts simultaneous  with mintailcomp; set=0 for no forced accumulation
+- `Comp_Error`:   0=multinomial, 1=dirichlet using Theta*n, 2=dirichlet using beta, 3=MV_Tweedie
+- `ParmSelect`:   consecutive index for dirichlet or MV_Tweedie
+- `minsamplesize`: minimum sample size; set to 1 to match 3.24, minimum value is 0.001
+
 ```{r}
 #------------------------------------------------------------------------------------------
-#_mintailcomp:  upper and lower distribution for females and males separately are 
-#               accumulated until exceeding this level.
-#_addtocomp:    after accumulation of tails; this value added to all bins
-#_combM+F:      males and females treated as combined gender below this bin number 
-#_compressbins: accumulate upper tail by this number of bins; acts simultaneous 
-#               with mintailcomp; set=0 for no forced accumulation
-#_Comp_Error:   0=multinomial, 
-#               1=dirichlet using Theta*n, 
-#               2=dirichlet using beta, 
-#               3=MV_Tweedie
-#_ParmSelect:   consecutive index for dirichlet or MV_Tweedie
-#_minsamplesize: minimum sample size; set to 1 to match 3.24, minimum value is 0.001
-#
-#_mintailcomp addtocomp combM+F CompressBins CompError ParmSelect minsamplesize
-#------------------------------------------------------------------------------------------
-# crear data.frame 
-age_info1<-data.frame(mintailcomp=rep(-1,4),
-                      addtocomp=rep(0.001,4),
-                      combine_M_F=rep(0,4),
-                      CompressBins=rep(0,4),
-                      CompError=rep(0,4),
-                      ParmSelect=rep(0,4),
-                      minsamplesize=rep(1,4))
+age_info1<-data.frame(mintailcomp=rep(-1,2),
+                      addtocomp=rep(0.001,2),
+                      combine_M_F=rep(0,2),
+                      CompressBins=rep(0,2),
+                      CompError=rep(0,2),
+                      ParmSelect=rep(0,2),
+                      minsamplesize=rep(1,2))
 
-row.names(age_info1)<-c("FISHERY", "SURVEY1", "SURVEY2","SURVEY3")
+row.names(age_info1)<-c("FISHERY", "SURVEY1")
 #---------------------------------------------------------------------------------
 dat1$age_info<-age_info1 
 dat1$age_info
@@ -786,29 +749,34 @@ dat1$age_info
 
 #### Datos de composicion de edad
 \quad
+`Lbin_method` se debe ingresar una de las siguientes opciones; 1=poplenbins; 2=datalenbins; 3=lengths
+`agecomp`: es una matriz que contiene la siguiente información:
+
+- `Yr`:
+- `Seas`:
+- `FltSvy`:
+- `Gender`: sex codes:  0=combined;1=use female only; 2=use male only; 3=use both as joint sexxlength distribution
+- `Part`: partition codes:  (0=combined; 1=discard; 2=retained
+- `Ageerr`: 
+- `Lbin_lo`:
+- `Lbin_hi`:
+- `Nsamp`:
+
+NOTA: si no se ingresan datos de edad entonces `Lbin_method` y `agecomp` = `NULL`
+
 ```{r}
 #------------------------------------------------------------------------------------------
-dat1$Lbin_method <- 1 #_Lbin_method_for_Age_Data: 1=poplenbins; 2=datalenbins; 3=lengths
+dat1$Lbin_method <- 1 
 #------------------------------------------------------------------------------------------
-# sex codes:  0=combined; 
-#             1=use female only; 
-#             2=use male only; 
-#             3=use both as joint sexxlength distribution
-# partition codes:  (0=combined; 
-#                    1=discard; 
-#                    2=retained
-#_yr month fleet sex part ageerr Lbin_lo Lbin_hi Nsamp datavector(female-male)
-#------------------------------------------------------------------------------------------
-# Arreglo de datos
-new_agecomp<-data.frame(Yr=2003:2021, 
-                                Seas=7, 
-                                FltSvy=-1, 
-                                Gender=3, 
-                                Part=0,  
-                                Ageerr=2, 
-                                Lbin_lo=-1, 
-                                Lbin_hi=-1, 
-                                Nsamp=75)
+new_agecomp<-data.frame(Yr=c(2003:2021,2003:2021), 
+                                Seas=rep(7,(19*2)), 
+                                FltSvy=c(rep(1,19), rep(2,19)),
+                                Gender=rep(3,(19*2)), 
+                                Part=rep(0,(19*2)),  
+                                Ageerr=rep(2,(19*2)), 
+                                Lbin_lo=rep(-1,(19*2)), 
+                                Lbin_hi=rep(-1,(19*2)), 
+                                Nsamp=rep(75,(19*2)))
 
 
 dat_rows_names<-paste("E",seq(0,5,1),sep="")
@@ -819,7 +787,12 @@ dat_rows_names<-paste("E",seq(0,5,1),sep="")
 
 names(CATNUM.DAT)<-dat_rows_names 
 
-new_agecomp<-cbind(new_agecomp, CATNUM.DAT)
+TUNEFF.DAT<-TUNEFF.DAT[,2:7]
+names(TUNEFF.DAT)<-dat_rows_names 
+
+new_agecomp<-cbind(new_agecomp, rbind(CATNUM.DAT,TUNEFF.DAT))
+
+
 #---------------------------------------------------------------------------------
 dat1$agecomp<-new_agecomp
 dat1$agecomp
@@ -832,23 +805,24 @@ dat1$agecomp
 
 #### Tallas medias a la edad
 \quad
+`use_MeanSize_at_Age_obs`: Use_MeanSize-at-Age_obs (0/1)
+`MeanSize_at_Age_obs` es una matriz que contiene la siguiente información:
+
+- `Yr`:
+- `Seas`:
+- `FltSvy`:
+- `Gender`:  sex codes:  0=combined;1=use female only; 2=use male only; 3=use both as joint sexxlength distribution
+- `Part`: partition codes:  (0=combined;  1=discard;  2=retained
+- `AgeErr`: ageerr codes:  positive means mean length-at-age; negative means mean bodywt_at_age
+- `Ignore`:
+
+NOTA: si no se ingresan datos de tallas medias a la edad  entonces `use_MeanSize_at_Age_obs` = 0 y `MeanSize_at_Age_obs` = `NULL`
+
 ```{r}
 #---------------------------------------------------------------------------------
-dat1$use_MeanSize_at_Age_obs <- 0 #_Use_MeanSize-at-Age_obs (0/1)
+dat1$use_MeanSize_at_Age_obs <- 0 
 dat1$use_MeanSize_at_Age_obs
 #---------------------------------------------------------------------------------
-# sex codes:  0=combined; 
-#             1=use female only; 
-#             2=use male only; 
-#             3=use both as joint sexxlength distribution
-# partition codes:  (0=combined; 
-#                    1=discard; 
-#                    2=retained
-# ageerr codes:  positive means mean length-at-age; negative means mean bodywt_at_age
-#_yr month fleet sex part ageerr ignore datavector(female-male)
-#                                          samplesize(female-male)
-#---------------------------------------------------------------------------------
-# Arreglo de datos
 MeanSize_at_Age_obs_esp<-data.frame(Yr="# -9999",
                                     Seas=0,
                                     FltSvy=0,
@@ -866,7 +840,7 @@ names(dat_rows)<-dat_rows_names
 # crear data.frame 
 MeanSize_at_Age_obs1 <-cbind(MeanSize_at_Age_obs_esp, dat_rows)
 #---------------------------------------------------------------------------------
-dat1$MeanSize_at_Age_obs<-MeanSize_at_Age_obs1 
+dat1$MeanSize_at_Age_obs<-NULL
 dat1$MeanSize_at_Age_obs
 #---------------------------------------------------------------------------------
 ```
@@ -875,20 +849,17 @@ dat1$MeanSize_at_Age_obs
 \quad
 (tarea = buscar ejemplo donde ingresen estos datos)
 ```{r}
-dat1$N_environ_variables<-0 #_N_environ_variables
+dat1$N_environ_variables<-0 
 dat1$N_environ_variables
-# -2 in yr will subtract mean for that env_var; 
-# -1 will subtract mean and divide by stddev (e.g. Z-score)
-#Yr Variable Value
-#
+
 ```
 
 #### Sizefreq data 
 \quad
 (tarea = buscar ejemplo donde ingresen estos datos)
 ```{r}
-# Sizefreq data. Defined by method because a fleet can use multiple methods
-dat1$N_sizefreq_methods<-0 # N sizefreq methods to read (or -1 for expanded options)
+
+dat1$N_sizefreq_methods<-0 
 dat1$N_sizefreq_methods
 ```
 
@@ -896,7 +867,7 @@ dat1$N_sizefreq_methods
 \quad
 (tarea = buscar ejemplo donde ingresen estos datos)
 ```{r}
-dat1$do_tags<-0 # do tags (0/1/2); where 2 allows entry of TG_min_recap
+dat1$do_tags<-0 
 dat1$do_tags
 ```
 
@@ -904,22 +875,18 @@ dat1$do_tags
 \quad
 (tarea = buscar ejemplo donde ingresen estos datos)
 ```{r}
-dat1$morphcomp_data<-0 #    morphcomp data(0/1) 
+dat1$morphcomp_data<-0 
 dat1$morphcomp_data
-#  Nobs, Nmorphs, mincomp
-#  yr, seas, type, partition, Nsamp, datavector_by_Nmorphs
-#
+
 ```
 
 ##### Priors de selectividad
 \quad
 (tarea = buscar ejemplo donde ingresen estos datos)
 ```{r}
-dat1$use_selectivity_priors<-0 #  Do dataread for selectivity priors(0/1)
+dat1$use_selectivity_priors<-0 
 dat1$use_selectivity_priors
-# Yr, Seas, Fleet,  Age/Size,  Bin,  selex_prior,  prior_sd
-# feature not yet implemented
-#
+
 ```
 
 #### Final de archivo data.ss
@@ -1570,7 +1537,7 @@ MGparm_seas_effects1<-data.frame(matrix(rep(0,10),nrow=1,ncol=10))
 colnames(MGparm_seas_effects1)<-paste("MGparm_seas_effects_",seq(1,10,1),sep="")
 
 ctl1$MGparm_seas_effects <-MGparm_seas_effects1
-
+ctl1$MGparm_seas_effects
 ##--------------------------------------------------------------
 ```
 
@@ -1774,7 +1741,7 @@ ctl1$F_ballpark <- 0.1
 ctl1$F_ballpark_year <- -2003
 ctl1$F_Method <- 3
 ctl1$maxF     <- 0.95
-ctl1$F_iter   <- 4
+ctl1$F_iter   <- NULL
 #--------------------------------------------------
 ```
 
@@ -1829,6 +1796,11 @@ Q_parms1<-data.frame( "LO"           = -7,
 ctl1$Q_parms[1,]<-Q_parms1
 rownames(ctl1$Q_parms)[1]<-"LnQ_base_SURVEY1(2)"
 #--------------------------------------------------
+
+#elimino los parámetros que no se utilizaran en el modelo  por el momento
+patron_eliminar<-rownames(ctl1$Q_parms)[grep("_SURVEY2",rownames(ctl1$Q_parms))] 
+ctl1$Q_parms<- subset(ctl1$Q_parms, !rownames(ctl1$Q_parms) %in%
+                          c(patron_eliminar,"Q_extraSD_SURVEY1(2)"))
 ```
 
 \newpage
@@ -1863,20 +1835,24 @@ rownames(ctl1$Q_parms)[1]<-"LnQ_base_SURVEY1(2)"
 
 ```{r}
 #--------------------------------------------------
-size_selex_types1<-data.frame("Pattern" = 1,
+size_selex_types1<-data.frame("Pattern" = 0,
                               "Discard" = 0,
                               "Male"    = 0,
                               "Special" = 0)
 ctl1$size_selex_types[1,]<-size_selex_types1
 rownames(ctl1$size_selex_types)[1]<-"FISHERY"
 #--------------------------------------------------
-size_selex_types2<-data.frame("Pattern" = 1,
+size_selex_types2<-data.frame("Pattern" = 0,
                               "Discard" = 0,
                               "Male"    = 0,
                               "Special" = 0)
 ctl1$size_selex_types[2,]<-size_selex_types2
 rownames(ctl1$size_selex_types)[2]<-"SURVEY1"
 #--------------------------------------------------
+#elimino los parámetros que no se utilizaran en el modelo  por el momento
+patron_eliminar<-rownames(ctl1$size_selex_types)[grep("SURVEY2",rownames(ctl1$size_selex_types))] 
+ctl1$size_selex_types<- subset(ctl1$size_selex_types, !rownames(ctl1$size_selex_types) %in%
+                          c(patron_eliminar))
 ```
 
 ### tipos de selectividad a la edad
@@ -1916,83 +1892,91 @@ age_selex_types2<-data.frame( Pattern = 11,
 ctl1$age_selex_types[2,]<-age_selex_types2
 rownames(ctl1$age_selex_types)[2]<-"SURVEY1"
 #--------------------------------------------------
+#elimino los parámetros que no se utilizaran en el modelo  por el momento
+patron_eliminar<-rownames(ctl1$age_selex_types)[grep("SURVEY2",rownames(ctl1$age_selex_types))] 
+ctl1$age_selex_types<- subset(ctl1$age_selex_types, !rownames(ctl1$age_selex_types) %in%
+                          c(patron_eliminar))
+
 ctl1$age_selex_types
+
 ```
 
 #### parametros de selectividad a la talla
 \quad
 ```{r}
-#--------------------------------------------------
-size_selex_parms1<-data.frame("LO"           = 19.00,
-                      "HI"           = 80,
-                      "INIT"         = 53.64110,
-                      "PRIOR"        = 50,
-                      "PR_SD"        = 0.01,
-                      "PR_type"      = 1,
-                      "PHASE"        = 2,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-ctl1$size_selex_parms[1,]<-size_selex_parms1
-rownames(ctl1$size_selex_parms)[1]<-"SizeSel_P_1_FISHERY(1)"
-#--------------------------------------------------
-size_selex_parms2<-data.frame("LO"           = 0.01,
-                      "HI"           = 60,
-                      "INIT"         = 18.92320,
-                      "PRIOR"        = 15,
-                      "PR_SD"        = 0.01,
-                      "PR_type"      = 1,
-                      "PHASE"        = 3,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-ctl1$size_selex_parms[2,]<-size_selex_parms2
-rownames(ctl1$size_selex_parms)[2]<-"SizeSel_P_2_FISHERY(1)"
-#--------------------------------------------------
-size_selex_parms3<-data.frame("LO"           = 19.00,
-                      "HI"           = 70,
-                      "INIT"         = 36.65300,
-                      "PRIOR"        = 30,
-                      "PR_SD"        = 0.01,
-                      "PR_type"      = 1,
-                      "PHASE"        = 2,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-ctl1$size_selex_parms[3,]<-size_selex_parms3
-rownames(ctl1$size_selex_parms)[3]<-"SizeSel_P_1_SURVEY1(2)"
-#--------------------------------------------------
-size_selex_parms4<-data.frame(row.names="SizeSel_P_2_SURVEY1(2)",
-                      "LO"           = 0.01,
-                      "HI"           = 60,
-                      "INIT"         = 6.59179,
-                      "PRIOR"        = 10,
-                      "PR_SD"        = 0.01,
-                      "PR_type"      = 1,
-                      "PHASE"        = 3,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-ctl1$size_selex_parms[4,]<-size_selex_parms4
-rownames(ctl1$size_selex_parms)[4]<-"SizeSel_P_2_SURVEY1(2)"
-#--------------------------------------------------
-ctl1$size_selex_parms
+# #--------------------------------------------------
+# size_selex_parms1<-data.frame("LO"           = 19.00,
+#                       "HI"           = 80,
+#                       "INIT"         = 53.64110,
+#                       "PRIOR"        = 50,
+#                       "PR_SD"        = 0.01,
+#                       "PR_type"      = 1,
+#                       "PHASE"        = 2,
+#                       "env_var&link" = 0,
+#                       "dev_link"     = 0,
+#                       "dev_minyr"    = 0,
+#                       "dev_maxyr"    = 0,
+#                       "dev_PH"       = 0,
+#                       "Block"        = 0,
+#                       "Block_Fxn"    = 0)
+# ctl1$size_selex_parms[1,]<-size_selex_parms1
+# rownames(ctl1$size_selex_parms)[1]<-"SizeSel_P_1_FISHERY(1)"
+# #--------------------------------------------------
+# size_selex_parms2<-data.frame("LO"           = 0.01,
+#                       "HI"           = 60,
+#                       "INIT"         = 18.92320,
+#                       "PRIOR"        = 15,
+#                       "PR_SD"        = 0.01,
+#                       "PR_type"      = 1,
+#                       "PHASE"        = 3,
+#                       "env_var&link" = 0,
+#                       "dev_link"     = 0,
+#                       "dev_minyr"    = 0,
+#                       "dev_maxyr"    = 0,
+#                       "dev_PH"       = 0,
+#                       "Block"        = 0,
+#                       "Block_Fxn"    = 0)
+# ctl1$size_selex_parms[2,]<-size_selex_parms2
+# rownames(ctl1$size_selex_parms)[2]<-"SizeSel_P_2_FISHERY(1)"
+# #--------------------------------------------------
+# size_selex_parms3<-data.frame("LO"           = 19.00,
+#                       "HI"           = 70,
+#                       "INIT"         = 36.65300,
+#                       "PRIOR"        = 30,
+#                       "PR_SD"        = 0.01,
+#                       "PR_type"      = 1,
+#                       "PHASE"        = 2,
+#                       "env_var&link" = 0,
+#                       "dev_link"     = 0,
+#                       "dev_minyr"    = 0,
+#                       "dev_maxyr"    = 0,
+#                       "dev_PH"       = 0,
+#                       "Block"        = 0,
+#                       "Block_Fxn"    = 0)
+# ctl1$size_selex_parms[3,]<-size_selex_parms3
+# rownames(ctl1$size_selex_parms)[3]<-"SizeSel_P_1_SURVEY1(2)"
+# #--------------------------------------------------
+# size_selex_parms4<-data.frame(row.names="SizeSel_P_2_SURVEY1(2)",
+#                       "LO"           = 0.01,
+#                       "HI"           = 60,
+#                       "INIT"         = 6.59179,
+#                       "PRIOR"        = 10,
+#                       "PR_SD"        = 0.01,
+#                       "PR_type"      = 1,
+#                       "PHASE"        = 3,
+#                       "env_var&link" = 0,
+#                       "dev_link"     = 0,
+#                       "dev_minyr"    = 0,
+#                       "dev_maxyr"    = 0,
+#                       "dev_PH"       = 0,
+#                       "Block"        = 0,
+#                       "Block_Fxn"    = 0)
+# ctl1$size_selex_parms[4,]<-size_selex_parms4
+# rownames(ctl1$size_selex_parms)[4]<-"SizeSel_P_2_SURVEY1(2)"
+# #--------------------------------------------------
+
+
+#ctl1$size_selex_parms
 ```
 
 #### parametros de selectividad a la edad
@@ -2048,8 +2032,8 @@ age_selex_parms3<-data.frame(row.names="AgeSel_P_1_SURVEY1(2)",
                       "dev_PH"       = 0,
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
-ctl1$age_selex_parms[3,]<-age_selex_parms3
-rownames(ctl1$age_selex_parms)[3]<-"AgeSel_P_1_SURVEY1(2)"
+ctl1$age_selex_parms[12,]<-age_selex_parms3
+rownames(ctl1$age_selex_parms)[12]<-"AgeSel_P_1_SURVEY1(2)"
 #--------------------------------------------------
 age_selex_parms4<-data.frame(row.names="AgeSel_P_2_SURVEY1(2)",
                       "LO"           = 0,
@@ -2066,9 +2050,14 @@ age_selex_parms4<-data.frame(row.names="AgeSel_P_2_SURVEY1(2)",
                       "dev_PH"       = 0,
                       "Block"        = 0,
                       "Block_Fxn"    = 0)
-ctl1$age_selex_parms[4,]<-age_selex_parms4
-rownames(ctl1$age_selex_parms)[4]<-"AgeSel_P_2_SURVEY1(2)"
+ctl1$age_selex_parms[13,]<-age_selex_parms4
+rownames(ctl1$age_selex_parms)[13]<-"AgeSel_P_2_SURVEY1(2)"
 #--------------------------------------------------
+#elimino los parámetros que no se utilizaran en el modelo  por el momento
+patron_eliminar<-rownames(ctl1$age_selex_parms)[c(3:11,14:24)]
+ctl1$age_selex_parms<- subset(ctl1$age_selex_parms, !rownames(ctl1$age_selex_parms) %in%
+                          c(patron_eliminar))
+
 ctl1$age_selex_parms
 ```
 
@@ -2098,73 +2087,17 @@ ctl1$age_selex_parms
 ctl1$Use_2D_AR1_selectivity <-0
 ctl1$TG_custom <- 0
 ctl1$DoVar_adjust <- 0
-ctl1$maxlambdaphase <- 4
+ctl1$maxlambdaphase <- 1
 ctl1$sd_offset <- 1
-ctl1$N_lambdas <- 3
-
-
+ctl1$lambdas <-NULL
+ctl1$N_lambdas <- 0
+ctl1$more_stddev_reporting  <- 0
 #----------------------------------------------------------------------
-lambdas1<-data.frame(row.names="Surv_SURVEY1_Phz2",
-                     like_comp=1,
-                     fleet=2,
-                     phase=2,
-                     value=1,
-                     sizefreq_method=1)
-ctl1$lambdas[1,]<-lambdas1
-#----------------------------------------------------------------------
-lambdas2<-data.frame(row.names="length_SURVEY1_sizefreq_method_1_Phz2",
-                     like_comp=4,
-                     fleet=2,
-                     phase=2,
-                     value=1,
-                     sizefreq_method=1)
-ctl1$lambdas[2,]<-lambdas2
-#----------------------------------------------------------------------
-lambdas3<-data.frame(row.names="length_SURVEY1_sizefreq_method_1_Phz3",
-                     like_comp=4,
-                     fleet=2,
-                     phase=3,
-                     value=1,
-                     sizefreq_method=1)
-ctl1$lambdas[3,]<-lambdas3
-#----------------------------------------------------------------------
-ctl1$lambdas
-#----------------------------------------------------------------------
-ctl1$more_stddev_reporting <- 1
+ctl1$stddev_reporting_specs <-"#"
+ctl1$stddev_reporting_selex <-"#"
+ctl1$stddev_reporting_N_at_A <-"#"
 
-#--------------------------------------------------
-stddev_reporting_specs1<-data.frame(matrix(c(1,1,-1,5,1,5,1,-1,5),
-                                           nrow=1,
-                                           ncol=9))
-colnames(stddev_reporting_specs1)<-paste("stddev_reporting_specs_",seq(1,9,1),sep="")
-
-ctl1$stddev_reporting_specs<-stddev_reporting_specs1  
-
-#--------------------------------------------------
-stddev_reporting_growth1<-data.frame(matrix(c(1,2,14,26,40),
-                                           nrow=1,
-                                           ncol=5))
-colnames(stddev_reporting_growth1)<-paste("stddev_reporting_growth_",seq(1,5,1),sep="")
-
-ctl1$stddev_reporting_growth <-stddev_reporting_growth1
-#--------------------------------------------------
-stddev_reporting_N_at_A1<-data.frame(matrix(c(1,2,14,26,40),
-                                           nrow=1,
-                                           ncol=5))
-colnames(stddev_reporting_N_at_A1)<-paste("stddev_reporting_N_at_A_",seq(1,5,1),sep="")
-
-ctl1$stddev_reporting_N_at_A <- stddev_reporting_N_at_A1
-#--------------------------------------------------
-stddev_reporting_selex1<-data.frame(matrix(c(5,15,25,35,43),
-                                           nrow=1,
-                                           ncol=5))
-colnames(stddev_reporting_selex1)<-paste("stddev_reporting_selex_",seq(1,5,1),sep="")
-
-ctl1$stddev_reporting_selex <- stddev_reporting_selex1
 ```
-
-
-
 
 ###  Escribir archivo de control modificado con la función  `SS_write` para el enfoque de modelación `SS3`
 ```{r eval=T}
@@ -2192,232 +2125,37 @@ start1<-start # para modificar
 
 
 ```{r}
-start1$datfile<-"data.ss"
-start1$ctlfile<-"control.ss"
-
-#--------------------------------------------------
-# 0=use init values in control file; 
-# 1=use ss.par
-#--------------------------------------------------
-start1$init_values_src<-0
-
-#--------------------------------------------------
-# run display detail (0,1,2)
-#--------------------------------------------------
-start1$run_display_detail<-0
-
-#--------------------------------------------------
-# detailed output
-#--------------------------------------------------
-# (0=minimal for data-limited, 
-#  1=high (w/ wtatage.ss_new), 
-#  2=brief, 
-#  3=custom) 
-#--------------------------------------------------
+start1$datfile            <-"data.ss"
+start1$ctlfile            <-"control.ss"
+start1$init_values_src    <-0
+start1$run_display_detail <-0
 start1$detailed_age_structure<-1
-
-#--------------------------------------------------
-# custom report options: 
-#--------------------------------------------------
-# -100 to start with minimal; 
-# -101 to start with all; 
-# -number to remove, +number to add, -999 to end
-#--------------------------------------------------
-
-#--------------------------------------------------
-# write 1st iteration details to echoinput.sso file (0,1) 
-#--------------------------------------------------
-start1$checkup<-0
-
-#--------------------------------------------------
-# write parm values to ParmTrace.sso 
-#--------------------------------------------------
-# (0=no,
-#  1=good,active; 
-#  2=good,all; 
-#  3=every_iter,all_parms; 
-#  4=every,active)
-#--------------------------------------------------
-start1$parmtrace<-0
-
-#--------------------------------------------------
-# write to cumreport.sso 
-#--------------------------------------------------
-#(0=no,
-# 1=like&timeseries; 
-# 2=add survey fits
-#--------------------------------------------------
-start1$cumreport<-0
-
-#--------------------------------------------------
-# Include prior_like for non-estimated parameters (0,1) 
-#--------------------------------------------------
-start1$prior_like<-1
-
-#--------------------------------------------------
-# Use Soft Boundaries to aid convergence (0,1) (recommended)
-#--------------------------------------------------
-start1$soft_bounds<-1
-
-#--------------------------------------------------
-# Number of datafiles to produce:  
-#--------------------------------------------------
-# 0 turns off all *.ss_new; 
-# 1st is data_echo.ss_new, 
-# 2nd is data_expval.ss, 
-# 3rd and higher are data_boot_**N.ss,
-#--------------------------------------------------
-start1$N_bootstraps<-1
-
-#--------------------------------------------------
-# Turn off estimation for parameters entering after this phase
-#--------------------------------------------------
+start1$checkup            <-0
+start1$parmtrace          <-0
+start1$cumreport          <-0
+start1$prior_like         <-1
+start1$soft_bounds        <-1
+start1$N_bootstraps       <-1
 start1$last_estimation_phase<-10
-
-#--------------------------------------------------
-# MCeval burn interval
-#--------------------------------------------------
-start1$MCMCburn<-0
-
-#--------------------------------------------------
-# MCeval thin interval
-#--------------------------------------------------
-start1$MCMCthin<-1
-
-#--------------------------------------------------
-# jitter initial parm value by this fraction
-#--------------------------------------------------
-start1$jitter_fraction<-0
-
-#--------------------------------------------------
-# min yr for sdreport outputs (-1 for styr); #_1969
-#--------------------------------------------------
-start1$minyr_sdreport<-1969
-
-#--------------------------------------------------
-# max yr for sdreport outputs 
-# (-1 for endyr+1; 
-#  -2 for endyr+Nforecastyrs); 
-#  #_2011
-#--------------------------------------------------
-start1$maxyr_sdreport<-2011
-
-#--------------------------------------------------
-# N individual STD years 
-#--------------------------------------------------
-start1$N_STD_yrs<-0
-
-#--------------------------------------------------
-#vector of year values 
-#--------------------------------------------------
-
-#--------------------------------------------------
-# final convergence criteria (e.g. 1.0e-04) 
-#--------------------------------------------------
-start1$converge_criterion<-1e-04
-
-#--------------------------------------------------
-# retrospective year relative to end year (e.g. -4)
-#--------------------------------------------------
-start1$retro_yr<-0
-
-#--------------------------------------------------
-# min age for calc of summary biomass
-#--------------------------------------------------
+start1$MCMCburn           <-0
+start1$MCMCthin           <-1
+start1$jitter_fraction    <-0
+start1$minyr_sdreport     <-2000
+start1$maxyr_sdreport     <-2023
+start1$N_STD_yrs          <-0
+start1$converge_criterion <-1e-04
+start1$retro_yr           <-0
 start1$min_age_summary_bio<-1
-
-#--------------------------------------------------
-# Depletion basis: 
-#--------------------------------------------------
-# denom is: 
-  # 0=skip; 
-  # 1=rel X*SPBvirgin; 
-  # 2=rel SPBmsy; 
-  # 3=rel X*SPB_styr; 
-  # 4=rel X*SPB_endyr; 
-  # values; 
-  # >=11 invoke N multiyr (up to 9!) with 10's digit; 
-  # >100 invokes log(ratio)
-#--------------------------------------------------
-start1$depl_basis<-2
-
-#--------------------------------------------------
-# Fraction (X) for Depletion denominator (e.g. 0.4)
-#--------------------------------------------------
-start1$depl_denom_frac<-1
-
-#--------------------------------------------------
-# SPR_report_basis: 
-#--------------------------------------------------
-  # 0=skip; 
-  # 1=(1-SPR)/(1-SPR_tgt); 
-  # 2=(1-SPR)/(1-SPR_MSY); 
-  # 3=(1-SPR)/(1-SPR_Btarget); 
-  # 4=rawSPR
-#--------------------------------------------------
-start1$SPR_basis<-4
-
-#--------------------------------------------------
-# F_reporting_units:
-#--------------------------------------------------
-  # 0=skip; 
-  # 1=exploitation(Bio); 
-  # 2=exploitation(Num); 
-  # 3=sum(Apical_F's); 
-  # 4=true F for range of ages; 
-  # 5=unweighted avg. 
-  # F for range of ages
-#--------------------------------------------------
-start1$F_report_units<-3
-
-#--------------------------------------------------
-#COND 10 15 
-#_min and max age over which average F will be calculated with F_reporting=4 or 5
-#--------------------------------------------------
-start1$F_age_range<-"#"
-
-#--------------------------------------------------
-# F_std_basis: 
-#--------------------------------------------------
-  # 0=raw_annual_F; 
-  # 1=F/Fspr; 
-  # 2=F/Fmsy; 
-  # 3=F/Fbtgt; 
-  # where F means annual_F;
-  # values >=11 invoke N multiyr (up to 9!) with 10's digit; 
-  # >100 invokes log(ratio)
-#--------------------------------------------------
-start1$F_report_basis<-0
-
-#--------------------------------------------------
-# MCMC output detail: 
-#--------------------------------------------------
-# integer part 
-# (0 = default; 
-#  1 = adds obj func components; 
-#  2 = +write_report_for_each_mceval); 
-#  and decimal part (added to SR_LN(R0) on first call to mcmc)
-#--------------------------------------------------
-start1$MCMC_output_detail<-0
-
-#--------------------------------------------------
-# ALK tolerance 
-#--------------------------------------------------
-# ***disabled in code (example 0.0001)
-#--------------------------------------------------
-start1$ALK_tolerance<-0
-
-#--------------------------------------------------
-# random number seed for bootstrap data 
-# (-1 to use long(time) as seed): # 1664576434
-#--------------------------------------------------
-start1$seed<- -1
-
-#--------------------------------------------------
-# check value for end of file and for version control
-#--------------------------------------------------
-start1$final<-3.3
-
+start1$depl_basis         <-2
+start1$depl_denom_frac    <-1
+start1$SPR_basis          <-4
+start1$F_report_units     <-3
+start1$F_age_range        <-"#"
+start1$F_report_basis     <-0
+start1$MCMC_output_detail <-0
+start1$ALK_tolerance      <-0
+start1$seed               <- -1
+start1$final              <-3.3
 ```
 
 
@@ -2442,285 +2180,48 @@ Revisamos los nombres de los componentes de la lista del archivo forecast
 fore <- r4ss::SS_readforecast(here(dirname.base,"forecast.ss"),
                         verbose = FALSE) #base
 fore1<-fore # para modificar
-#names(fore1) # muestra los objetos de la lista
+names(fore1) # muestra los objetos de la lista
 ```
 
 ```{r}
-#--------------------------------------------------
-# Benchmarks: 
-#--------------------------------------------------
-  # 0=skip;
-  # 1=calc F_spr,F_btgt,F_msy;
-  # 2=calc F_spr,F0.1,F_msy; 
-  # 3=add F_Blimit; 
-#--------------------------------------------------
 fore1$benchmarks <- 1
-
-#--------------------------------------------------
-# Do_MSY: 
-#--------------------------------------------------
-  # 1= set to F(SPR); 
-  # 2=calc F(MSY); 
-  # 3=set to F(Btgt) or F0.1; 
-  # 4=set to F(endyr); 
-  # 5=calc F(MEY) with MSY_unit options
-#--------------------------------------------------
-fore1$MSY <- 2
-
-
-# if Do_MSY=5, enter MSY_Units; then list fleet_ID, cost/F, price/mt, include_in_Fmey_scaling; 
-# -fleet_ID to fill; -9999 to terminate
-
-#--------------------------------------------------
-# SPR target (e.g. 0.40)
-#--------------------------------------------------
-fore1$SPRtarget <- 0.4
-
-#--------------------------------------------------
-# Biomass target (e.g. 0.40)
-#--------------------------------------------------
-fore1$Btarget <- 0.342
-
-#--------------------------------------------------
-#_Bmark_years: 
-#--------------------------------------------------
-#  beg_bio, end_bio, 
-#  beg_selex, end_selex, 
-#  beg_relF, end_relF, 
-#  beg_recr_dist, end_recr_dist,
-#  beg_SRparm, end_SRparm 
-# (enter actual year, or values of 0 or -integer to be rel. endyr)
-#--------------------------------------------------
-fore1$Bmark_years
-
-#  2001 2001 2001 2001 2001 2001 1971 2001 1971 2001
-# value <0 convert to endyr-value; 
-# except -999 converts to start_yr; 
-# must be >=start_yr and <=endyr
-
-#--------------------------------------------------
-#Bmark_relF_Basis: 
-#--------------------------------------------------
-  # 1 = use year range; 
-  # 2 = set relF same as forecast below
-#--------------------------------------------------
+fore1$MSY        <- 2
+fore1$SPRtarget  <- 0.4
+fore1$Btarget    <- 0.4
+#---------------------------------------------------------------------------------------
+Bmark_years1<-data.frame(matrix(rep(0,10),nrow=1,ncol=10))
+colnames(Bmark_years1)<-paste("#_Bmark_years_",seq(1,10,1),sep="")
+fore1$Bmark_years      <- Bmark_years1
+#---------------------------------------------------------------------------------------
 fore1$Bmark_relF_Basis <- 1
-
-#--------------------------------------------------
-# Forecast: 
-#--------------------------------------------------
-  # -1=none; 
-  # 0=simple_1yr; 
-  # 1=F(SPR); 
-  # 2=F(MSY)
-  # 3=F(Btgt) or F0.1;
-  # 4=Ave F (uses first-last relF yrs);
-  # 5=input annual F scalar
-#--------------------------------------------------
 fore1$Forecast <- 1
-
-# where none and simple require no input after this line; 
-# simple sets forecast F same as end year F
-
-#--------------------------------------------------
-# N forecast years 
-#--------------------------------------------------
 fore1$Nforecastyrs <- 10
-
-#--------------------------------------------------
-# Fmult (only used for Do_Forecast==5) such that apical_F(f)=Fmult*relF(f)
-#--------------------------------------------------
 fore1$F_scalar <- 0.2
-
-#--------------------------------------------------
-#_Fcast_years: 
-#--------------------------------------------------
-# beg_selex, end_selex,
-# beg_relF, end_relF, 
-# beg_mean recruits, end_recruits  
-# (enter actual year, or values of 0 or -integer to be rel. endyr)
-fore1$Fcast_years
-
-#  2001 2001 1991 2001 1971 2001
-
-#--------------------------------------------------
-# Forecast selectivity 
-#--------------------------------------------------
-#(0=fcast selex is mean from year range; 
-# 1=fcast selectivity from annual time-vary parms)
-#--------------------------------------------------
-fore1$Fcast_selex <- 0
-
-#--------------------------------------------------
-# Control rule method 
-#--------------------------------------------------
-  #(0: none; 
-  # 1: ramp does catch=f(SSB), buffer on F; 
-  # 2: ramp does F=f(SSB), buffer on F; 
-  # 3: ramp does catch=f(SSB), buffer on catch; 
-  # 4: ramp does F=f(SSB), buffer on catch) 
-# values for top, bottom and buffer exist, but not used when Policy=0
-#--------------------------------------------------
+#---------------------------------------------------------------------------------------
+Fcast_years1<-data.frame(matrix(c(-5,0,-5,0,-999,0),nrow=1,ncol=6))
+colnames(Fcast_years1)<-paste("#_Fcast_years_",seq(1,6,1),sep="")
+fore1$Fcast_years       <-Fcast_years1
+#---------------------------------------------------------------------------------------
+fore1$Fcast_selex       <- 0
 fore1$ControlRuleMethod <- 1
-
-#--------------------------------------------------
-# Control rule inflection for constant F 
-#--------------------------------------------------
-# (as frac of Bzero, e.g. 0.40);
-# must be > control rule cutoff, or set to -1 to use Bmsy/SSB_unf
-#--------------------------------------------------
-fore1$BforconstantF <- 0.4
-
-#--------------------------------------------------
-# Control rule cutoff for no F 
-#--------------------------------------------------
-  # (as frac of Bzero, e.g. 0.10) 
-#--------------------------------------------------
-fore1$BfornoF <- 0.1
-
-#--------------------------------------------------
-# Buffer:  
-#--------------------------------------------------
-  # enter Control rule target as fraction of Flimit (e.g. 0.75), 
-  # negative value invokes list of [year, scalar] with filling from year to YrMax 
-#--------------------------------------------------
-fore1$Flimitfraction <- 0.75
-
-#--------------------------------------------------
-#_N forecast loops 
-#--------------------------------------------------
-  # (1=OFL only; 
-  #  2=ABC; 
-  #  3=get F from forecast ABC catch with allocations applied)
-#--------------------------------------------------
-fore1$N_forecast_loops <- 3
-
-#--------------------------------------------------
-#_First forecast loop with stochastic recruitment
-#--------------------------------------------------
+fore1$BforconstantF     <- 0.4
+fore1$BfornoF           <- 0.1
+fore1$Flimitfraction    <- 0.75
+fore1$N_forecast_loops  <- 3
 fore1$First_forecast_loop_with_stochastic_recruitment <- 3
-
-#--------------------------------------------------
-#_Forecast recruitment: 
-#--------------------------------------------------
-# 0= spawn_recr; 
-# 1=value*spawn_recr_fxn; 
-# 2=value*VirginRecr; 
-# 3=recent mean from yr range above 
-# (need to set phase to -1 in control to get constant recruitment in MCMC)
-#--------------------------------------------------
-fore1$fcast_rec_option <- 1
-
-#--------------------------------------------------
-# value is multiplier of SRR 
-#--------------------------------------------------
-fore1$fcast_rec_val <- 1
-
-#--------------------------------------------------
-#_Forecast loop control 
-#--------------------------------------------------
-  # 5 (reserved for future bells&whistles) 
-#--------------------------------------------------
-fore1$Forecast_loop_control_5 <- 0
-
-#--------------------------------------------------
-#FirstYear for caps and allocations 
-#--------------------------------------------------
-  # (should be after years with fixed inputs) 
-#--------------------------------------------------
-fore1$FirstYear_for_caps_and_allocations <- 2010
-
-#--------------------------------------------------
-# stddev of log(realized catch/target catch) 
-#--------------------------------------------------
-  # in forecast (set value>0.0 to cause active impl_error)
-#--------------------------------------------------
-fore1$stddev_of_log_catch_ratio <- 0
-
-#--------------------------------------------------
-# Do West Coast gfish rebuilder output: 
-#--------------------------------------------------
-# 0=no; 
-# 1=yes 
-#--------------------------------------------------
+fore1$fcast_rec_option  <- 1
+fore1$fcast_rec_val     <- 1
+fore1$Forecast_loop_control_5  <- 0
+fore1$FirstYear_for_caps_and_allocations   <- 2020
+fore1$stddev_of_log_catch_ratio            <- 0
 fore1$Do_West_Coast_gfish_rebuilder_output <- 0
-
-#--------------------------------------------------
-# Rebuilder:  
-#--------------------------------------------------
-# first year catch could have been set to zero (Ydecl)(-1 to set to 1999)
-fore1$Ydecl <- 1999
-
-#--------------------------------------------------
-# Rebuilder:  
-#--------------------------------------------------
-# year for current age structure (Yinit) (-1 to set to endyear+1)
-fore1$Yinit <- 2022
-
-#--------------------------------------------------
-# fleet relative F:  
-#--------------------------------------------------
-# 1=use first-last alloc year; 
-# 2=read seas, fleet, alloc list below
-#--------------------------------------------------
-fore1$fleet_relative_F <- 1
-
-# Note that fleet allocation is used directly as average F if Do_Forecast=4 
-#--------------------------------------------------
-# basis for fcast catch tuning and for fcast catch caps and allocation  
-#--------------------------------------------------
-   # (2=deadbio; 
-   #  3=retainbio; 
-   #  5=deadnum; 
-   #  6=retainnum); 
-   #  NOTE: same units for all fleets
-#--------------------------------------------------
+fore1$Ydecl <- 2000
+fore1$Yinit <- 2021
+fore1$fleet_relative_F             <- 1
 fore1$basis_for_fcast_catch_tuning <- 2
-
-# Conditional input if relative F choice = 2
-# enter list of:  season,  fleet, relF; if used, terminate with season=-9999
-# 1 1 1
-# -9999 0 0  # terminator for list of relF
-# enter list of: fleet number, max annual catch for fleets with a max; terminate with fleet=-9999
-#-9999 -1
-# enter list of area ID and max annual catch; terminate with area=-9999
-#-9999 -1
-# enter list of fleet number and allocation group assignment, if any; terminate with fleet=-9999
-#-9999 -1
-
-#--------------------------------------------------
-#_if N allocation groups >0, 
-# list year, allocation fraction for each group 
-#--------------------------------------------------
-fore1$N_allocation_groups <- 0
-
-# list sequentially because read values fill to end of N forecast
-# terminate with -9999 in year field 
-# no allocation groups
-#
-
-#--------------------------------------------------
-# basis for input Fcast catch: 
-#--------------------------------------------------
-# -1=read basis with each obs; 
-# 2=dead catch; 
-# 3=retained catch; 
-# 99=input apical_F; 
-# NOTE: bio vs num based on fleet's catchunits
-#--------------------------------------------------
-fore1$InputBasis <- 2
-
-#--------------------------------------------------
-#enter list of Fcast catches or Fa; 
-# terminate with line having year=-9999
-#--------------------------------------------------
-#_Yr Seas Fleet Catch(or_F)
-#-9999 1 1 0 
-#
-#--------------------------------------------------
-# verify end of input 
-#--------------------------------------------------
-fore1$eof<-TRUE
+fore1$N_allocation_groups          <- 0
+fore1$InputBasis                   <- 2
+fore1$eof                          <- TRUE
 
 ```
 
@@ -2820,20 +2321,10 @@ wtat1<-wtat$wtatage # para modificar
 ```
 
 ```{r eval=T}
-# if Yr is negative, then fill remaining years for that Seas, growpattern, Bio_Pattern, Fleet
-# if season is negative, then fill remaining fleets for that Seas, Bio_Pattern, Sex, Fleet
-# will fill through forecast years, so be careful
-# fleet 0 contains begin season pop WT
-# fleet -1 contains mid season pop WT
-# fleet -2 contains maturity*fecundity
-#Yr Seas Sex Bio_Pattern BirthSeas Fleet 
-
-# Arreglo de datos
-
 maturity1<-as.numeric(PROPMAT.DAT[1,])
 data_wt<-as.data.frame(CATWT.DAT) 
 
-wt_flt<-data.frame(do.call(rbind,replicate(4,data_wt,simplify = FALSE))) %>% mutate(type=c(rep("#wt_flt_1",nyears),rep("#wt_flt_2",nyears),rep("#wt_flt_3",nyears),rep("#wt_flt_4",nyears)))
+wt_flt<-data.frame(do.call(rbind,replicate(2,data_wt,simplify = FALSE))) %>% mutate(type=c(rep("#wt_flt_1",nyears),rep("#wt_flt_2",nyears)))
 colnames(wt_flt)<-c("E0","E1","E2","E3","E4","E5","#type")
 
 fecundity<-data.frame(do.call(rbind,replicate(nyears,maturity1,simplify = FALSE)))  %>% mutate(type=c(rep("#fecundity",nyears))) 
@@ -2843,12 +2334,12 @@ popwt<-data.frame(do.call(rbind,replicate(2,data_wt,simplify = FALSE))) %>% muta
 colnames(popwt)<-c("E0","E1","E2","E3","E4","E5","#type")
 
 
-wtatege_f1<-data.frame(Yr=c(rep(years,7)), 
+wtatege_f1<-data.frame(Yr=c(rep(years,5)), 
                      Seas=1, 
                      Sex=1, 
                      Bio_Pattern=1,
                      BirthSeas=1,
-                     Fleet=c(rep(1,nyears),rep(2,nyears),rep(3,nyears),rep(4,nyears),
+                     Fleet=c(rep(1,nyears),rep(2,nyears),
                              rep(-2,nyears),
                              rep(0,nyears),rep(-1,nyears))) 
 
@@ -2858,6 +2349,7 @@ wtatege_f1[order(wtatege_f1$Yr),]
 
 
 ```
+
 
 
 
@@ -2876,111 +2368,3 @@ dir(dir_GSA1)[7]
 
 
 \newpage
-# GSA6 (Levante-Norte de España).
-
-\quad
-La conceptualización del modelo biológico de **GSA6** considera los siguientes componentes de la dinámica poblacional:
-
- - Estructura geográfica
- - Reproducción
- - Reclutamiento
- - Mortalidad natural
- - Crecimiento
- - otros...
-
-
-## Descripción del modelo
-\quad
-El modelo de evaluación de stock de **GSA6** se basa en un análisis estadístico de la dinámica de estructuras de edad anual que incorpora información biológica y pesquera. La información que ingresa al modelo consiste en ... 
-
-- Años de evaluación de stock = 2002_2021
-- número de edades = 6 años ?
-
-\pagebreak
-
-## Archivos utilizado para enfoque de modelación `a4a`
-\quad
-```{r}
-
-dir_GSA6 <-  here("hke_GSA6_a4a_format")
-dir(dir_GSA6)
-
-```
-
-
-
-#### Capturas anuales del stock (toneladas)
-\quad
-```{r}
-dir(dir_GSA6)[1]
-  CATCH.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[1],sep="/"),
-                          header=T,sep="",na="NA",fill=T,skip = 4)
-  CATCH.DAT
-  
-```
-
-#### índices de abundancia para calibrar (CPUEs o Campañas, o ambas). Normalmente para índices de campaña empleamos número/KM2.
-\quad
-```{r}
-dir(dir_GSA6)[12]
-  TUNEFF.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[12],sep="/"),
-                           sep="",na="NA",fill=T,skip = 6)
-  TUNEFF.DAT
-  
-```
-
-#### Matriz de número de individuos por edad/año de las capturas (Miles de individuos)
-\quad
-```{r}
-dir(dir_GSA6)[2]
-  CATNUM.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[2],sep="/"),
-                           sep="",na="NA",fill=T,skip = 5)
-  CATNUM.DAT 
-  
-```
-
-
-
-#### Peso medio por edad y año de tu matriz de captura (Kilos).
-\quad
-```{r}
-dir(dir_GSA6)[3]
-  CATWT.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[3],sep="/"),
-                           sep="",na="NA",fill=T,skip = 5)
-  CATWT.DAT 
-  
-```
-
-#### Medio por edad y año asumida para el stock (Normalmente = CATWT) (Kilos).
-\quad
-```{r}
-dir(dir_GSA6)[11]
-  STOCWT.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[11],sep="/"),
-                           sep="",na="NA",fill=T,skip = 5)
-  STOCWT.DAT
-  
-```
-
-#### Vector de mortalidad Natural por edad.
-\quad
-```{r}
-dir(dir_GSA6)[7]
-  NATMOR.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[7],sep="/"),
-                           sep="",na="NA",fill=T,skip = 5)
-  NATMOR.DAT
-  
-```
-
-#### Ogiva de madurez por edad.
-\quad
-```{r}
-dir(dir_GSA6)[10]
-  PROPMAT.DAT <- read.table(paste(dir_GSA6,dir(dir_GSA6)[10],sep="/"),
-                           sep="",na="NA",fill=T,skip = 5)
-  PROPMAT.DAT
-  
-```
-
-
-
-
