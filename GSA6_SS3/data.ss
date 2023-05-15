@@ -10,7 +10,7 @@
 1 #_Nsexes
 6 #_Nages
 1 #_N_areas
-4 #_Nfleets
+2 #_Nfleets
 #_fleetinfo
 #_type	surveytiming	area	units	need_catch_mult	fleetname
 1	-1	1	1	0	FISHERY	#_1
@@ -83,7 +83,7 @@
 #_population_length_bins
 2 # length bin method: 1=use databins; 2=generate from binwidth,min,max below; 3=read vector
 2 # binwidth for population size comp
-10 # minimum size in the population (lower edge of first bin and size at age 0.00)
+3 # minimum size in the population (lower edge of first bin and size at age 0.00)
 70 # maximum size in the population (lower edge of last bin)
 0 #_use_lencomp
 6 #_N_agebins
@@ -93,9 +93,8 @@
 #
 #_ageing_error
 1 #_N_ageerror_definitions
-#_	
-   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1
-0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001
+   -1	   -1	   -1	   -1	   -1	   -1
+0.001	0.001	0.001	0.001	0.001	0.001
 #
 #_age_info
 #_mintailcomp	addtocomp	combine_M_F	CompressBins	CompError	ParmSelect	minsamplesize
