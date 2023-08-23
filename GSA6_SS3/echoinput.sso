@@ -119,10 +119,104 @@ SPAWN month: 6; seas: 1; subseas_for_ALK: 1; timing_in_season: 0.416667
 1 N sexes 
 Accumulator age 6
 1 N_areas 
-4 total number of fishing fleets and surveys 
+2 total number of fishing fleets and surveys 
 rows are fleets; columns are: Fleet_#, fleet_type, timing, area, units, need_catch_mult
 1 #  1 -1 1 1 0 # FISHERY
 2 #  3 1 1 2 0 # SURVEY1
-3 #  -999 1 1 0 0.01 # 2003
-4 #  1 1 353.4 0.01 2004 # 1
-YPR_optimize_mask:  1 0 1 1
+YPR_optimize_mask:  1 0
+20 records
+first catch record:  -999 1 1 0 0.01
+last catch record:  2021 1 1 287.5 0.01
+ equ, seas:   -1 1 catches:  0 0
+year, seas: 2003 1 catches:  353.4 0
+year, seas: 2004 1 catches:  464.5 0
+year, seas: 2005 1 catches:  322.9 0
+year, seas: 2006 1 catches:  333 0
+year, seas: 2007 1 catches:  310.2 0
+year, seas: 2008 1 catches:  293.4 0
+year, seas: 2009 1 catches:  570.7 0
+year, seas: 2010 1 catches:  530.8 0
+year, seas: 2011 1 catches:  652.7 0
+year, seas: 2012 1 catches:  447.7 0
+year, seas: 2013 1 catches:  337.7 0
+year, seas: 2014 1 catches:  248.2 0
+year, seas: 2015 1 catches:  175.1 0
+year, seas: 2016 1 catches:  170.5 0
+year, seas: 2017 1 catches:  295.7 0
+year, seas: 2018 1 catches:  425.4 0
+year, seas: 2019 1 catches:  274.5 0
+year, seas: 2020 1 catches:  170.4 0
+year, seas: 2021 1 catches:  287.5 0
+
+#_show_total_catch_by_fleet
+1 type: 1 FISHERY catch: 6664.3
+2 type: 3 SURVEY1 catch: 0
+
+#_  now read survey characteristics:  fleet_#, svyunits, svyerrtype for each fleet 
+Units:  0=numbers; 1=biomass; 2=F; >=30 for special patterns
+Errtype:  -1=normal; 0=lognormal; >0=T
+SD_Report: 0=no sdreport; 1=enable sdreport
+Fleet Units Err_Type SD_Report
+ 1 1 0 0
+ 2 1 0 0
+19 nobs_survey 
+ 2003 1 2 242.2 0.2
+ 2004 1 2 187.9 0.2
+ 2005 1 2 168.1 0.2
+ 2006 1 2 350.2 0.3
+ 2007 1 2 356.6 1.2
+ 2008 1 2 306.3 0.6
+ 2009 1 2 329.6 0.3
+ 2010 1 2 147 0.2
+ 2011 1 2 116.9 0.2
+ 2012 1 2 62.9 0.5
+ 2013 1 2 38.4 0.2
+ 2014 1 2 383.7 1.7
+ 2015 1 2 161.7 0.6
+ 2016 1 2 238.7 0.2
+ 2017 1 2 80.7 0.3
+ 2018 1 2 143.9 0.4
+ 2019 1 2 28.6 0.5
+ 2020 1 2 50.6 0.3
+ 2021 1 2 104.9 0.2
+Successful read of survey data; total N:  19
+Index Survey_name       N   Super_Per    Min_val   max_val  //  Observations:
+2    SURVEY1   19     0      28.6 383.7 //  242.2 187.9 168.1 350.2 356.6 306.3 329.6 147 116.9 62.9 38.4 383.7 161.7 238.7 80.7 143.9 28.6 50.6 104.9
+Number of sdreport index values: 0
+ note order of discard read is now: N fleets with disc, then if Ndisc_fleets>0 read:  fleet, disc_units, disc_error(for 1,Ndisc_fleets), then read obs 
+0 N fleets with discard 
+Successful read of discard data  
+Index Survey_name       N   Super_Per    Min_val   max_val  //  Observations:
+0 Use mean body size (weight or length); If 0, then no additional input in 3.30 
+Successful pre-processing of mean-bodysize data
+2 LenBin_option:  1=set to data bins; 2 generate uniform; 3 = read custom
+ 2 10 70 input for setup of pop length bins 
+0 indicator for length data  
+
+Processed Population length bin info 
+ 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38 40 42 44 46 48 50 52 54 56 58 60 62 64 66 68 70
+Overall_Compositions
+Fleet len_bins  0 0
+Successful processing of length data
+
+Enter the number of agebins, or 0 if no age data
+6 N age bins 
+ 0 1 2 3 4 5 agebins 
+1 N age error defs 
+ageerror_definitions_as_read
+ -1 -1 -1 -1 -1 -1 0.001
+ 0.001 0.001 0.001 0.001 0.001 -1 0.001
+#_now read for each fleet info for processing the age comps:
+#_mintailcomp: upper and lower distribution for females and males separately are accumulated until exceeding this level.
+#_addtocomp:  after accumulation of tails; this value added to all bins
+#_males and females treated as combined gender below this bin number 
+#_compressbins: accumulate upper tail by this number of bins; acts simultaneous with mintailcomp; set=0 for no forced accumulation
+#_Comp_Error:  0=multinomial, 1=dirichlet
+#_Comp_ERR-2:  index of parameter to use, cumulative count after DM parms for length comp
+#_minsamplesize: minimum sample size; set to 1 to match 3.24, set to 0 for no minimum
+0 0 0 0 1 -1 0.001  #_fleet: 1 FISHERY
+0 0 0 0 1 1 2003  #_fleet: 2 SURVEY1
+number of D-M parameters needed for length and age comp data: 1
+7 Lbin method for defined size ranges 
+age_obs_#:1 #  1 3 0 2 -1 -1 75 746.7 1502 216 44 2.1 0.5 2004 7
+age_obs_#:2 #  1 3 0 2 -1 -1 75 1425.9 2837.4 231.9 20.5 1.7 0.5 2005 7

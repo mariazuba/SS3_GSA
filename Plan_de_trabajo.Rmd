@@ -709,7 +709,7 @@ dat1$agebin_vector
 \quad
 ```{r}
 # Arreglo de datos
-matrix_ageerror<-rbind(rep(-1,26),rep(0.001,26))
+matrix_ageerror<-rbind(rep(-1,6),rep(0.001,6))
 #---------------------------------------------------------
 dat1$N_ageerror_definitions<-1   #_N_ageerror_definitions
 dat1$N_ageerror_definitions
@@ -2345,10 +2345,40 @@ wtatege_f1<-data.frame(Yr=c(rep(years,5)),
 
 wtatege_f1<-cbind(wtatege_f1,rbind(wt_flt,fecundity,popwt))
 
-wtatege_f1[order(wtatege_f1$Yr),]
+
+wtat1<-wtatege_f1[order(wtatege_f1$Yr),]
 
 
 ```
+
+
+
+###  Escribir archivo de wtatage modificado con la función  `SS_write` para el enfoque de modelación `SS3`
+```{r eval=T}
+r4ss::SS_writewtatage(mylist = wtat1,
+                      dir = here(dirname.simple_mod),
+                      file ="wtatage.ss",
+                      overwrite = TRUE,
+                      verbose = TRUE)
+```
+
+
+
+# comprobar si el modelo corre al modificar este archivo
+```{r eval=F}
+exe_path <- here("Ejecutables_SS3","3.30.18_release")
+ss_exe_mac <- paste(exe_path,"ss_osx",sep= "/")
+
+r4ss::run(
+  dir = dirname.simple_mod,
+  exe = ss_exe_mac,
+  extras = "",
+  skipfinished = FALSE,
+  show_in_console = TRUE,
+  verbose = TRUE
+)
+```
+
 
 
 

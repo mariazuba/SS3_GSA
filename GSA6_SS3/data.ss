@@ -83,7 +83,7 @@
 #_population_length_bins
 2 # length bin method: 1=use databins; 2=generate from binwidth,min,max below; 3=read vector
 2 # binwidth for population size comp
-10 # minimum size in the population (lower edge of first bin and size at age 0.00)
+3 # minimum size in the population (lower edge of first bin and size at age 0.00)
 70 # maximum size in the population (lower edge of last bin)
 0 #_use_lencomp
 6 #_N_agebins
@@ -93,9 +93,14 @@
 #
 #_ageing_error
 1 #_N_ageerror_definitions
+<<<<<<< HEAD
 #_	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
    -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1
 0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001
+=======
+   -1	   -1	   -1	   -1	   -1	   -1
+0.001	0.001	0.001	0.001	0.001	0.001
+>>>>>>> d5b7b893b660c3914869e3b41c9896f097707f2b
 #
 #_age_info
 #_mintailcomp	addtocomp	combine_M_F	CompressBins	CompError	ParmSelect	minsamplesize

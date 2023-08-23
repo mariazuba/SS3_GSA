@@ -7,5 +7,4 @@
 
 This file contains warnings, suggestions and notes generated as files are read and processed
 
-1 fishing fleet: 3 surveytime read as: 1 normally is -1 for fishing fleet; can override for indiv. obs. using 1000+month
-2 fishing fleet: 4 surveytime read as: 1 normally is -1 for fishing fleet; can override for indiv. obs. using 1000+month
+1 reading past end of file for age data; exit 
