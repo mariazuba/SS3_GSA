@@ -10,7 +10,7 @@
 1 #_Nsexes
 6 #_Nages
 1 #_N_areas
-4 #_Nfleets
+2 #_Nfleets
 #_fleetinfo
 #_type	surveytiming	area	units	need_catch_mult	fleetname
 1	-1	1	1	0	FISHERY	#_1
@@ -93,7 +93,7 @@
 #
 #_ageing_error
 1 #_N_ageerror_definitions
-#_	
+#_	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA	NA
    -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1	   -1
 0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001	0.001
 #

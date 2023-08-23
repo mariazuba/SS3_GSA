@@ -30,7 +30,7 @@
 #
 # setup for M, growth, maturity, fecundity, recruitment distibution, movement
 #
-0 #_natM_type:_0=1Parm; 1=N_breakpoints;_2=Lorenzen;_3=agespecific;_4=agespec_withseasinterpolate;_5=Maunder_M;_6=Age-range_Lorenzen
+0 #_natM_type:_0=1Parm; 1=N_breakpoints;_2=Lorenzen;_3=agespecific;_4=agespec_withseasinterpolate
 #_no additional input for selected M option; read 1P per morph
 1 # GrowthModel: 1=vonBert with L1&L2; 2=Richards with L1&L2; 3=age_specific_K_incr; 4=age_specific_K_decr;5=age_specific_K_each; 6=NA; 7=NA; 8=growth cessation
 1 #_Age(post-settlement)_for_L1;linear growth below this
@@ -58,13 +58,13 @@
    -3	       3	  2.9624	  2.9624	 99	0	-50	0	0	0	0	0	0	0	#_Wtlen_2_Fem_GP_1         
    -3	      43	      37	      37	 99	0	-50	0	0	0	0	0	0	0	#_Mat50%_Fem_GP_1          
    -3	       3	   -0.48	   -0.48	 99	0	-50	0	0	0	0	0	0	0	#_Mat_slope_Fem_GP_1       
+   -3	       3	       1	       1	 99	0	-50	0	0	0	0	0	0	0	#_Eggs/kg_inter_Fem_GP_1   
+   -3	       3	       0	       0	 99	0	-50	0	0	0	0	0	0	0	#_Eggs/kg_slope_wt_Fem_GP_1
     0	       2	       1	       1	 99	0	-50	0	0	0	0	0	0	0	#_RecrDist_GP_1            
     0	       2	       1	       1	 99	0	-50	0	0	0	0	0	0	0	#_RecrDist_Area_1          
     0	       2	       1	       1	 99	0	-50	0	0	0	0	0	0	0	#_RecrDist_month_1         
     1	       1	       1	       1	  1	0	 -1	0	0	0	0	0	0	0	#_CohortGrowDev            
 1e-06	0.999999	0.999999	     0.5	0.5	0	-99	0	0	0	0	0	0	0	#_FracFemale_GP_1          
-   -3	       3	       1	       1	 99	0	-50	0	0	0	0	0	0	0	#_Eggs/kg_inter_Fem_GP_1   
-   -3	       3	       0	       0	 99	0	-50	0	0	0	0	0	0	0	#_Eggs/kg_slope_wt_Fem_GP_1
 #_no timevary MG parameters
 #
 #_seasonal_effects_on_biology_parms
@@ -133,7 +133,7 @@
 #_Cond -6 6 1 1 2 0.01 -4 0 0 0 0 0 0 0  #_placeholder if no parameters
 #
 # Input variance adjustments factors: 
-#_Data_type Fleet Value
+#_Factor Fleet Value
 -9999 1 0 # terminator
 #
 1 #_maxlambdaphase

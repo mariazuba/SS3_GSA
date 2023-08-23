@@ -206,7 +206,7 @@ dat1$Ngenders       <-1     #_Ngenders: 1, 2, -1  (use -1 for 1 sex setup with S
 dat1$Nsexes         <-1
 dat1$Nages          <-6    #_Nages=accumulator age, first age is always age 0
 dat1$N_areas        <-1     #_Nareas
-dat1$Nfleets        <-4     #_Nfleets (including surveys)
+dat1$Nfleets        <-2     #_Nfleets (including surveys)
 ```
 
 
@@ -713,7 +713,7 @@ matrix_ageerror<-rbind(rep(-1,26),rep(0.001,26))
 #---------------------------------------------------------
 dat1$N_ageerror_definitions<-1   #_N_ageerror_definitions
 dat1$N_ageerror_definitions
-dat1$ageerror<-matrix_ageerror #_ageerror_definitions
+dat1$ageerror<-matrix(matrix_ageerror,nrow=2) #_ageerror_definitions
 dat1$ageerror
 ```
 
