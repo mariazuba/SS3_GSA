@@ -1,0 +1,10 @@
+hke																	
+ Smallest length   5.0
+ No ages requested  5
+ CURVE  108.0  .210  .115
+      1  18.3
+      2  35.3
+      3  49.1
+      4  60.2
+      5  69.3
+ PLUS GROUP   6
