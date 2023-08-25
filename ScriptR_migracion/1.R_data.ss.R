@@ -154,7 +154,7 @@ len_info_CompError     <-rep(0,nfleets)
 len_info_ParmSelect    <-rep(0,nfleets)
 len_info_minsamplesize <-rep(1,nfleets)
 # Genera data.frame
-len_info1<-data.frame(mintailcomp     = len_info_mintailcomp,
+len_info1<-data.frame(mintailcomp   = len_info_mintailcomp,
                       addtocomp     = len_info_addtocomp,
                       combine_M_F   = len_info_combine_M_F,
                       CompressBins  = len_info_CompressBins,

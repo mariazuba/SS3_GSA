@@ -40,14 +40,14 @@ names(ctl1)
 #===============================================================================
 # Pesos medios a la edad y número de patrones de crecimiento y platoon ----
 #===============================================================================
-ctl1$EmpiricalWAA <- 0 # 0=Do not read the weight-at-age (wtatage.ss) file
+ctl1$EmpiricalWAA <- 1 # 1=Do  read the weight-at-age (wtatage.ss) file
 ctl1$N_GP         <- 1 # 1=number (N) of growth (GP)
 ctl1$N_platoon    <- 1 # 1=number of plattons within a growth pattern/morph
 #===============================================================================
 # Especificaciones de la Distribución del patrón reclutamiento ----
 # por patrón de crecimiento, área y mes de reclutamiento
 #===============================================================================
-ctl1$recr_dist_method<-3 # 3 = option recruitment distribution method, 3=each settle entity
+ctl1$recr_dist_method<-2 # 3 = option recruitment distribution method, 3=each settle entity
 ctl1$recr_global_area<-1 # 1 = spawner-recruitment (not implement yet, but required), 1= global
 ctl1$recr_dist_read  <-1 # 1 = number of recruitment settlement assignments
 ctl1$recr_dist_inx   <-0 # 0 = future feature, not implement yet but required
@@ -66,7 +66,7 @@ ctl1$recr_dist_pattern<-rec_pattern
 #===============================================================================
 ctl1$N_Block_Designs    <- 1
 ctl1$blocks_per_pattern <- 1
-ctl1$Block_Design       <- c(1989,1989)
+ctl1$Block_Design       <- c(2003,2003)
 
 #===============================================================================
 # Parámetros que varían en el tiempo ----
@@ -96,15 +96,16 @@ ctl1$time_vary_auto_generation<-time_auto
 # Si natM_type = 0 (fijo para todas las edades), utilizar el siguiente código
 ctl1$natM_type          <- 0 # 0=1 parámetro, fijo para todas las edades 
 ctl1$GrowthModel        <- 1
-ctl1$Growth_Age_for_L1  <- 0.1
-ctl1$Growth_Age_for_L2  <- 4
+ctl1$Growth_Age_for_L1  <- 1
+ctl1$Growth_Age_for_L2  <- 25
 ctl1$Exp_Decay          <- -999
 ctl1$Growth_Placeholder <- 0
-ctl1$N_natMparms        <- 1
+#ctl1$N_natMparms        <- 1
 ctl1$SD_add_to_LAA      <- 0
 ctl1$CV_Growth_Pattern  <- 0
-ctl1$maturity_option    <- 1
-ctl1$First_Mature_Age   <- 1
+
+ctl1$maturity_option    <- 5
+ctl1$First_Mature_Age   <- 2
 ctl1$fecundity_option   <- 1
 ctl1$hermaphroditism_option    <- 0
 ctl1$parameter_offset_approach <- 1
@@ -116,9 +117,9 @@ ctl1$parameter_offset_approach <- 1
 # Mortalidad natural
 MG_parms1<-data.frame(#Parámetros
                       "LO"           = 0.05,
-                      "HI"           = 2.5,
-                      "INIT"         = 1.3,  # valor INIT y PRIOR tomado desde stockfile, se asume  fijo
-                      "PRIOR"        = 1.3, # valor esperado ignorado si PR_type=0
+                      "HI"           = 0.4,
+                      "INIT"         = 1.8,  
+                      "PRIOR"        = -1.60944, # valor esperado ignorado si PR_type=0
                       #Error estándar
                       "PR_SD"        = 0.1, #este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
@@ -137,15 +138,15 @@ ctl1$MG_parms["NatM_p_1_Fem_GP_1",] <- MG_parms1
 
 # Crecimiento: Lmin
 MG_parms2<-data.frame(#Parámetros
-                      "LO"           = 0,
+                      "LO"           = 2,
                       "HI"           = 15,
-                      "INIT"         = 10.33, # valor tomado de WGHANSA report 2022 (Recruitment mean
+                      "INIT"         = 5, 
                       "PRIOR"        = 32, # valor esperado ignorado si PR_type=0
                       #Error
                       "PR_SD"        = 99, #este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
                       #fase de estimación
-                      "PHASE"        = 5, # se estima
+                      "PHASE"        = -5, # se estima
                       #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
                       "env_var&link" = 0,
                       "dev_link"     = 0,
@@ -159,15 +160,15 @@ ctl1$MG_parms["L_at_Amin_Fem_GP_1",]<-MG_parms2
 
 # Crecimiento: Lmax
 MG_parms3<-data.frame(#Parámetros
-                      "LO"           = 5,
-                      "HI"           = 22,
-                      "INIT"         = 19, # tomado desde stockfile, fijo
-                      "PRIOR"        = 19, # valor esperado ignorado si PR_type=0
+                      "LO"           = 45,
+                      "HI"           = 60,
+                      "INIT"         = 53,
+                      "PRIOR"        = 50, # valor esperado ignorado si PR_type=0
                       #Error
                       "PR_SD"        = 99, #este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
                       #fase de estimación
-                      "PHASE"        = 5, # se estima
+                      "PHASE"        = -3, # se estima
                       #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
                       "env_var&link" = 0,
                       "dev_link"     = 0,
@@ -181,15 +182,15 @@ ctl1$MG_parms["L_at_Amax_Fem_GP_1",]<-MG_parms3
 
 # Crecimiento: K
 MG_parms4<-data.frame(#Parámetros
-                      "LO"           = 0.1,
-                      "HI"           = 2.0,
-                      "INIT"         = 0.89, # tomado desde stockfile, fijo
-                      "PRIOR"        = 0.9, # valor esperado ignorado si PR_type=0
+                      "LO"           = 0.2,
+                      "HI"           = 0.4,
+                      "INIT"         = 0.3, 
+                      "PRIOR"        = 0.3, # valor esperado ignorado si PR_type=0
                       #Error
                       "PR_SD"        = 99, #este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
                       #fase de estimación
-                      "PHASE"        = 3, # se estima
+                      "PHASE"        = -3, # se estima
                       #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
                       "env_var&link" = 0,
                       "dev_link"     = 0,
@@ -204,14 +205,14 @@ ctl1$MG_parms["VonBert_K_Fem_GP_1",]<-MG_parms4
 # Crecimiento CV young
 MG_parms5<-data.frame(#Parámetros
                       "LO"           = 0.03,
-                      "HI"           = 0.150,
+                      "HI"           = 0.16,
                       "INIT"         = 0.066,
                       "PRIOR"        = 0.1, # valor esperado ignorado si PR_type=0
                       #Error
                       "PR_SD"        = 99, #este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
                       #fase de estimación
-                      "PHASE"        = 5, # se estima
+                      "PHASE"        = -5, # se estima
                       #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
                       "env_var&link" = 0,
                       "dev_link"     = 0,
@@ -226,14 +227,14 @@ ctl1$MG_parms["CV_young_Fem_GP_1",]<-MG_parms5
 # Crecimiento CV old
 MG_parms6<-data.frame(#Parámetros
                       "LO"           = 0.03,
-                      "HI"           = 0.150,
-                      "INIT"         = 0.066,
+                      "HI"           = 0.16,
+                      "INIT"         = 0.062,
                       "PRIOR"        = 0.1, # valor esperado ignorado si PR_type=0
                       #Error
                       "PR_SD"        = 99,#este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
                       #fase de estimación
-                      "PHASE"        = 5, # se estima
+                      "PHASE"        = -5, # se estima
                       #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
                       "env_var&link" = 0,
                       "dev_link"     = 0,
@@ -249,8 +250,8 @@ ctl1$MG_parms["CV_old_Fem_GP_1",]<-MG_parms6
 MG_parms7<-data.frame(#Parámetros
                       "LO"           = -3.0,
                       "HI"           =  3.0,
-                      "INIT"         = 0.00312895,# valor tomado de WGHANSA report 2022
-                      "PRIOR"        = 0.00312895, # valor esperado ignorado si PR_type=0
+                      "INIT"         = 7e-06,
+                      "PRIOR"        = 7e-06, 
                       #Error
                       "PR_SD"        = 99,#este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
@@ -270,9 +271,9 @@ ctl1$MG_parms["Wtlen_1_Fem_GP_1",]<-MG_parms7
 # Relación longitud-peso: b
 MG_parms8<-data.frame(#Parámetros
                       "LO"           = -3.0,
-                      "HI"           =  4.0,
-                      "INIT"         = 3.278,# valor tomado de WGHANSA report 2022
-                      "PRIOR"        = 3.278, # valor esperado ignorado si PR_type=0
+                      "HI"           =  3.0,
+                      "INIT"         = 2.9624,
+                      "PRIOR"        = 2.9624, 
                       #Error
                       "PR_SD"        = 99,#este valor es ignorado si PR_type=0
                       "PR_type"      = 0, #0=no se usa (none)
@@ -292,9 +293,9 @@ ctl1$MG_parms["Wtlen_2_Fem_GP_1",]<-MG_parms8
 # Madurez: 50%
 MG_parms9<-data.frame(#Parámetros
                        "LO"           = -3.0,
-                       "HI"           =  15,
-                       "INIT"         = 11.2,
-                       "PRIOR"        = 0,
+                       "HI"           =  43,
+                       "INIT"         = 37,
+                       "PRIOR"        = 37,
                        #Error
                        "PR_SD"        = 99,#este valor es ignorado si PR_type=0
                        "PR_type"      = 0, #0=no se usa (none)
@@ -315,8 +316,8 @@ ctl1$MG_parms["Mat50%_Fem_GP_1",]<-MG_parms9
 MG_parms10<-data.frame(#Parámetros
                        "LO"           = -3.0,
                        "HI"           =  3.0,
-                       "INIT"         = -0.45,
-                       "PRIOR"        = -0.45, # valor esperado ignorado si PR_type=0
+                       "INIT"         = -0.48,
+                       "PRIOR"        = -0.48, # valor esperado ignorado si PR_type=0
                        #Error
                        "PR_SD"        = 99,#este valor es ignorado si PR_type=0
                        "PR_type"      = 0, #0=no se usa (none)
@@ -359,8 +360,8 @@ ctl1$MG_parms["Eggs/kg_inter_Fem_GP_1",]<-MG_parms11
 MG_parms12<-data.frame(#Parámetros
                        "LO"           = -3.0,
                        "HI"           =  3.0,
-                       "INIT"         = 1,
-                       "PRIOR"        = 1, # valor esperado ignorado si PR_type=0
+                       "INIT"         = 0,
+                       "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
                        #Error
                        "PR_SD"        = 99,#este valor es ignorado si PR_type=0
                        "PR_type"      = 0, #0=no se usa (none)
@@ -592,8 +593,8 @@ rownames(ctl1$SR_parms)[5]<-"SR_autocorr"
 #===============================================================================
 
 ctl1$do_recdev <- 1
-ctl1$MainRdevYrFirst <- 1989  # primer año de la serie (timefile)
-ctl1$MainRdevYrLast  <- 2022  # último año de la serie (timefile)
+ctl1$MainRdevYrFirst <- 2003  
+ctl1$MainRdevYrLast  <- 2021  
 ctl1$recdev_phase    <- 1
 ctl1$recdev_adv      <- 0
 ctl1$recdev_early_start       <- NULL
@@ -615,7 +616,7 @@ ctl1$N_Read_recdevs <- NULL
 #===============================================================================
 
 ctl1$F_ballpark      <- ctl$F_ballpark # igual a base "simple"
-ctl1$F_ballpark_year <- -1989 # valor negativo lo deshabilita
+ctl1$F_ballpark_year <- -2003 # valor negativo lo deshabilita
 ctl1$F_Method        <- 3 #option 3=hibrida (recomendada SS3)
 ctl1$maxF            <- ctl$maxF # valor máximo de F, en este caso se deja igual a base "simple"
 ctl1$F_iter          <- ctl$F_iter # número de iteraciones dpara tuning de F en método híbrido, en este caso se deja igual a base "simple"
@@ -631,16 +632,9 @@ Q_options1<-data.frame("fleet"     = 2, # 2 = pelago
                        "biasadj"   = 0,
                        "float"     = 0) 
 ctl1$Q_options[1,]<-Q_options1
-rownames(ctl1$Q_options)[1]<-"Pelago"
+rownames(ctl1$Q_options)[1]<-"SURVEY1"
 
-Q_options2<-data.frame("fleet"     = 3, # 3 = ecocadiz
-                       "link"      = 1, # 1 = q simple, se asume proporcional: y=q*x
-                       "link_info" = 0, # 0 = no hay información adicional
-                       "extra_se"  = 0, 
-                       "biasadj"   = 0,
-                       "float"     = 0) 
-ctl1$Q_options[2,]<-Q_options2
-rownames(ctl1$Q_options)[2]<-"Ecocadiz"
+
 
 #===============================================================================
 # Parámetros de capturabilidad ----
@@ -656,7 +650,7 @@ Q_parms1<-data.frame(#Parámetros
                      "PR_type"      = 0, #0=no se usa (none)
                      #fase de estimación
                      "PHASE"        = 1,#se estima
-                     #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                     #variabilidad en el tiempo  (Se asumen invariantes )
                      "env_var&link" = 0,
                      "dev_link"     = 0,
                      "dev_minyr"    = 0,
@@ -666,34 +660,8 @@ Q_parms1<-data.frame(#Parámetros
                      "Block"        = 0,
                      "Block_Fxn"    = 0)
 ctl1$Q_parms[1,]<-Q_parms1
-rownames(ctl1$Q_parms)[1]<-"LnQ_base_Pelago(2)"
+rownames(ctl1$Q_parms)[1]<-"LnQ_base_SURVEY1(2)"
 
-Q_parms2<-data.frame( #Parámetros
-                      "LO"           = -3,
-                      "HI"           = 2,
-                      "INIT"         = 0,
-                      "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
-                      #Error
-                      "PR_SD"        = 1,#este valor es ignorado si PR_type=0
-                      "PR_type"      = 0, #0=no se usa (none)
-                      #fase de estimación
-                      "PHASE"        = 1, #se estima
-                      #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      #bloques
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
-ctl1$Q_parms[2,]<-Q_parms2
-rownames(ctl1$Q_parms)[2]<-"LnQ_base_Ecocadiz(3)"
-
-#===============================================================================
-# Código para eliminar objetos de la lista base que no utilizaremos ----
-#===============================================================================
-ctl1$Q_parms <- subset(ctl1$Q_parms, !rownames(ctl1$Q_parms) %in% c("LnQ_base_SURVEY2(3)"))
 
 #===============================================================================
 # Tipos de patrones de selectividad a la talla ----
@@ -711,14 +679,8 @@ size_selex_types2<-data.frame("Pattern" = 1,  # se asume la misma selectividad p
                               "Male"    = 0, # 0=sin información
                               "Special" = 0) # 0=sin información
 ctl1$size_selex_types[2,]<-size_selex_types2
-rownames(ctl1$size_selex_types)[2]<-"Pelago"
+rownames(ctl1$size_selex_types)[2]<-"SURVEY1"
 
-size_selex_types3<-data.frame("Pattern" = 1,  # se asume la misma selectividad para todas las tallas
-                              "Discard" = 0, # 0=sin información
-                              "Male"    = 0, # 0=sin información
-                              "Special" = 0) # 0=sin información
-ctl1$size_selex_types[3,]<-size_selex_types3
-rownames(ctl1$size_selex_types)[3]<-"Ecocadiz"
 
 #===============================================================================
 # Tipos de patrones de selectividad a la edad ----
@@ -736,14 +698,9 @@ age_selex_types2<-data.frame(Pattern = 12, # se asume logística
                              Male    = 0,  # 0=sin información
                              Special = 0)  # 0=sin información
 ctl1$age_selex_types[2,]<-age_selex_types2
-rownames(ctl1$age_selex_types)[2]<-"Pelago"
+rownames(ctl1$age_selex_types)[2]<-"SURVEY1"
 
-age_selex_types3<-data.frame(Pattern = 12, # se asume logística
-                             Discard = 0,  # 0=sin información
-                             Male    = 0,  # 0=sin información
-                             Special = 0)  # 0=sin información
-ctl1$age_selex_types[3,]<-age_selex_types3
-rownames(ctl1$age_selex_types)[3]<-"Ecocadiz"
+
 
 #===============================================================================
 # Parámetros de selectividad a la talla ----
@@ -752,14 +709,14 @@ rownames(ctl1$age_selex_types)[3]<-"Ecocadiz"
 size_selex_parms1<-data.frame(#Parámetros
                               "LO"           = -1,
                               "HI"           = 20,
-                              "INIT"         = 12.6, # valor tomado de WGHANSA report 2022
+                              "INIT"         = 12.6, 
                               "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
                               #Error
                               "PR_SD"        = 0,#este valor es ignorado si PR_type=0
                               "PR_type"      = 0, #0=no se usa (none)
                               #fase de estimación
                               "PHASE"        = 2,#se estima
-                              #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                              #variabilidad en el tiempo  (Se asumen invariantes)
                               "env_var&link" = 0,
                               "dev_link"     = 0,
                               "dev_minyr"    = 0,
@@ -774,14 +731,14 @@ rownames(ctl1$size_selex_parms)[1]<-"SizeSel_P_1_Flota(1)"
 size_selex_parms2<-data.frame(#Parámetros
                               "LO"           = -1,
                               "HI"           = 3,
-                              "INIT"         = 0.193, # valor tomado de WGHANSA report 2022
+                              "INIT"         = 0.193, 
                               "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
                               #Error
                               "PR_SD"        = 0,#este valor es ignorado si PR_type=0
                               "PR_type"      = 0, #0=no se usa (none)
                               #fase de estimación
                               "PHASE"        = 2,#se estima
-                              #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                              #variabilidad en el tiempo  (Se asumen invariantes)
                               "env_var&link" = 0,
                               "dev_link"     = 0,
                               "dev_minyr"    = 0,
@@ -796,14 +753,14 @@ rownames(ctl1$size_selex_parms)[2]<-"SizeSel_P_2_Flota(1)"
 size_selex_parms3<-data.frame(#Parámetros
                               "LO"           = -3,
                               "HI"           = 20,
-                              "INIT"         = 14.3, # valor tomado de WGHANSA report 2022
+                              "INIT"         = 14.3, 
                               "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
                               #Error
                               "PR_SD"        = 0,#este valor es ignorado si PR_type=0
                               "PR_type"      = 0, #0=no se usa (none)
                               #fase de estimación
                               "PHASE"        = 3,#se estima
-                              #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                              #variabilidad en el tiempo  (Se asumen invariantes)
                               "env_var&link" = 0,
                               "dev_link"     = 0,
                               "dev_minyr"    = 0,
@@ -813,19 +770,19 @@ size_selex_parms3<-data.frame(#Parámetros
                               "Block"        = 0,
                               "Block_Fxn"    = 0)
 ctl1$size_selex_parms[3,]<-size_selex_parms3
-rownames(ctl1$size_selex_parms)[3]<-"SizeSel_P_1_Pelago(2)"
+rownames(ctl1$size_selex_parms)[3]<-"SizeSel_P_1_SURVEY1(2)"
 
 size_selex_parms4<-data.frame(#Parámetros
                               "LO"           = -3,
                               "HI"           = 3,
-                              "INIT"         = 0.406, # valor tomado de WGHANSA report 2022
+                              "INIT"         = 0.406, 
                               "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
                               #Error
                               "PR_SD"        = 0,#este valor es ignorado si PR_type=0
                               "PR_type"      = 0, #0=no se usa (none)
                               #fase de estimación
                               "PHASE"        = 3,#se estima
-                              #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                              #variabilidad en el tiempo  (Se asumen invariantes)
                               "env_var&link" = 0,
                               "dev_link"     = 0,
                               "dev_minyr"    = 0,
@@ -835,51 +792,9 @@ size_selex_parms4<-data.frame(#Parámetros
                               "Block"        = 0,
                               "Block_Fxn"    = 0)
 ctl1$size_selex_parms[4,]<-size_selex_parms4
-rownames(ctl1$size_selex_parms)[4]<-"SizeSel_P_2_Pelago(2)"
+rownames(ctl1$size_selex_parms)[4]<-"SizeSel_P_2_SURVEY1(2)"
 
-size_selex_parms5<-data.frame(#Parámetros
-                              "LO"           = -1,
-                              "HI"           = 20,
-                              "INIT"         = 10.8,  # valor tomado de WGHANSA report 2022
-                              "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
-                              #Error
-                              "PR_SD"        = 0,#este valor es ignorado si PR_type=0
-                              "PR_type"      = 0, #0=no se usa (none)
-                              #fase de estimación
-                              "PHASE"        = 3,#se estima
-                              #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
-                              "env_var&link" = 0,
-                              "dev_link"     = 0,
-                              "dev_minyr"    = 0,
-                              "dev_maxyr"    = 0,
-                              "dev_PH"       = 0.5,
-                              #bloques
-                              "Block"        = 0,
-                              "Block_Fxn"    = 0)
-ctl1$size_selex_parms[5,]<-size_selex_parms5
-rownames(ctl1$size_selex_parms)[5]<-"SizeSel_P_1_Ecocadiz(3)"
 
-size_selex_parms6<-data.frame(#Parámetros
-                              "LO"           = -1,
-                              "HI"           = 5,
-                              "INIT"         = 0.764, # valor tomado de WGHANSA report 2022
-                              "PRIOR"        = 0, # valor esperado ignorado si PR_type=0
-                              #Error
-                              "PR_SD"        = 0,#este valor es ignorado si PR_type=0
-                              "PR_type"      = 0, #0=no se usa (none)
-                              #fase de estimación
-                              "PHASE"        = 3,#se estima
-                              #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
-                              "env_var&link" = 0,
-                              "dev_link"     = 0,
-                              "dev_minyr"    = 0,
-                              "dev_maxyr"    = 0,
-                              "dev_PH"       = 0.5,
-                              #bloques
-                              "Block"        = 0,
-                              "Block_Fxn"    = 0)
-ctl1$size_selex_parms[6,]<-size_selex_parms6
-rownames(ctl1$size_selex_parms)[6]<-"SizeSel_P_2_Ecocadiz(3)"
 
 #===============================================================================
 # Parámetros de selectividad a la edad ----
@@ -888,14 +803,14 @@ rownames(ctl1$size_selex_parms)[6]<-"SizeSel_P_2_Ecocadiz(3)"
 age_selex_parms1<-data.frame(#Parámetros
                              "LO"            = -2.0,
                              "HI"            = 100,
-                             "INIT"          = 100, # valor tomado de WGHANSA report 2022
+                             "INIT"          = 100, 
                              "PRIOR"         = 0, # valor esperado ignorado si PR_type=0
                              #Error
                              "PR_SD"         = 0.01,#este valor es ignorado si PR_type=0
                              "PR_type"       = 0, #0=no se usa (none)
                              #fase de estimación
                              "PHASE"         = -1,#fijo
-                             #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                             #variabilidad en el tiempo  (Se asumen invariantes)
                              "env_var&link"  = 0,
                              "dev_link"      = 0,
                              "dev_minyr"     = 0,
@@ -917,7 +832,7 @@ age_selex_parms2<-data.frame(#Parámetros
                              "PR_type"       = 0, #0=no se usa (none)
                              #fase de estimación
                              "PHASE"         = -1,#fijo
-                             #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                             #variabilidad en el tiempo  (Se asumen invariantes)
                              "env_var&link"  = 0,
                              "dev_link"      = 0,
                              "dev_minyr"     = 0,
@@ -939,7 +854,7 @@ age_selex_parms3<-data.frame(#Parámetros
                              "PR_type"       = 0, #0=no se usa (none)
                              #fase de estimación
                              "PHASE"         = -1,#fijo
-                             #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                             #variabilidad en el tiempo  (Se asumen invariantes)
                              "env_var&link"  = 0,
                              "dev_link"      = 0,
                              "dev_minyr"     = 0,
@@ -949,7 +864,7 @@ age_selex_parms3<-data.frame(#Parámetros
                              "Block"         = 0,
                              "Block_Fxn"     = 0)
 ctl1$age_selex_parms[3,]<-age_selex_parms3
-rownames(ctl1$age_selex_parms)[3]<-"AgeSel_P_1_Pelago(2)"
+rownames(ctl1$age_selex_parms)[3]<-"AgeSel_P_1_SURVEY1(2)"
 
 age_selex_parms4<-data.frame(#Parámetros
                              "LO"            = -100,
@@ -961,7 +876,7 @@ age_selex_parms4<-data.frame(#Parámetros
                              "PR_type"       = 0, #0=no se usa (none)
                              #fase de estimación
                              "PHASE"         = -1,#fijo
-                             #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
+                             #variabilidad en el tiempo  (Se asumen invariantes)
                              "env_var&link"  = 0,
                              "dev_link"      = 0,
                              "dev_minyr"     = 0,
@@ -971,51 +886,8 @@ age_selex_parms4<-data.frame(#Parámetros
                              "Block"         = 0,
                              "Block_Fxn"     = 0)
 ctl1$age_selex_parms[4,]<-age_selex_parms4
-rownames(ctl1$age_selex_parms)[4]<-"AgeSel_P_2_Pelago(2)"
+rownames(ctl1$age_selex_parms)[4]<-"AgeSel_P_2_SURVEY1(2)"
 
-age_selex_parms5<-data.frame(#Parámetros
-                             "LO"            = -2.0,
-                             "HI"            = 100,
-                             "INIT"          = 100,
-                             "PRIOR"         = 0, # valor esperado ignorado si PR_type=0
-                             #Error
-                             "PR_SD"         = 0.01,#este valor es ignorado si PR_type=0
-                             "PR_type"       = 0, #0=no se usa (none)
-                             #fase de estimación
-                             "PHASE"         = -1,#fijo
-                             #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
-                             "env_var&link"  = 0,
-                             "dev_link"      = 0,
-                             "dev_minyr"     = 0,
-                             "dev_maxyr"     = 0,
-                             "dev_PH"        = 0.5,
-                             #bloques
-                             "Block"         = 0,
-                             "Block_Fxn"     = 0)
-ctl1$age_selex_parms[5,]<-age_selex_parms5
-rownames(ctl1$age_selex_parms)[5]<-"AgeSel_P_1_Ecocadiz(3)"
-
-age_selex_parms6<-data.frame(#Parámetros
-                             "LO"            = -100,
-                             "HI"            = 100,
-                             "INIT"          = -100,
-                             "PRIOR"         = 0, # valor esperado ignorado si PR_type=0
-                             #Error
-                             "PR_SD"         = 0.01,#este valor es ignorado si PR_type=0
-                             "PR_type"       = 0, #0=no se usa (none)
-                             #fase de estimación
-                             "PHASE"         = -1, #fijo
-                             #variabilidad en el tiempo  (Se asumen invariantes para boqueron )
-                             "env_var&link"  = 0,
-                             "dev_link"      = 0,
-                             "dev_minyr"     = 0,
-                             "dev_maxyr"     = 0,
-                             "dev_PH"        = 0.5,
-                             #bloques
-                             "Block"         = 0,
-                             "Block_Fxn"     = 0)
-ctl1$age_selex_parms[6,]<-age_selex_parms6
-rownames(ctl1$age_selex_parms)[6]<-"AgeSel_P_2_Ecocadiz(3)"
 
 #===============================================================================
 # Otros parámetros ----
