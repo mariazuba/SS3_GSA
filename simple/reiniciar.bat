@@ -1,1 +1,0 @@
-del  *.log *.ss_new *.sso ss.* admodel.* runnumber.*
