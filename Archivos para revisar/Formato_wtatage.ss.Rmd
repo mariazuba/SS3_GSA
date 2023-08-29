@@ -1,0 +1,62 @@
+---
+title: "Formato Archivo wtatage.ss"
+author: " "
+date: '`r format(Sys.Date(),"%B, %d, %Y")`'
+output: 
+  pdf_document:
+   toc: TRUE
+   number_sections: yes
+urlcolor: blue   
+---
+
+
+\newpage
+```{r global-options, include=FALSE}
+knitr::opts_chunk$set(echo=T, warning=FALSE, message=FALSE,collapse=TRUE,fig.align="center",fig.pos="h!")
+```
+
+
+
+```{r results='hide',include=FALSE}
+## Librerías requeridas
+ paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
+               "patchwork","dplyr","reshape","here","r4ss")
+ lapply(paquetes, require, character.only = TRUE)
+```
+
+# Contexto
+
+## Identificamos los directorio de trabajo
+```{r}
+dirname.base <- here("simple")
+dirname.simple_base <- here("simple_base")
+dirname.simple_mod <- here("simple_modificado")
+```
+
+## Leer los archivos de Stock Synthesis  con la función `SS_read()`
+
+```{r}
+inputs <- r4ss::SS_read(dir = dirname.simple_mod)
+```
+
+## Investigar el modelo 
+
+ Cada uno de los archivos de entrada se lee en R como una lista. 
+ 
+ Use `names()` para ver todos los componentes de la lista
+
+
+## Revisamos los elementos de la lista
+```{r}
+names(inputs) 
+
+inputs$dir
+inputs$path
+```
+
+
+
+## Revisamos los nombres de los componentes de la lista del archivo  wtatage
+```{r}
+names(inputs$wtatage)
+```
