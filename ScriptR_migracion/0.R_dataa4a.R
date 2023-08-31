@@ -4,15 +4,24 @@
 
 # Esta sección puede ser mejorada con las funciones de Rgadget(), tarea pendiente
 
-library(here)
+
 library(readxl)
 library(openxlsx)
 # CARGAR LIBRERIAS ----
-source(here("ScriptR_migracion","Librerias_Requeridas.R")) 
+paquetes <- c("stringr", "tidyverse", "kableExtra","ggplot2","ggthemes",
+              "patchwork","dplyr","reshape","here","r4ss","zoo")
+lapply(paquetes, require, character.only = TRUE)
 
 # CARGAR DIRECTORIOS ----
-source(here("ScriptR_migracion","Directorios_Requeridos.R")) 
+# Archivos_datos ----
+## Merluzas_a4a: Archivos a4a con datos requeridos.
+dir<-here("Archivos_datos",'Merluzas_a4a',"hke-GSA1-a4a_ format" )
 
+tallasexcell<-here("Archivos_datos","Merluzas_a4a","Indice_abundancia_tallas_medits_GSA1_hake.xlsx")
+
+archivoExcell<-"datos_GSA1_SS3.xlsx"
+
+dir.excell<-paste(here("Archivos_datos",'Excell_SS3'),archivoExcell,sep="/")
 # 1. LEER ARCHIVOS DE DATOS a4a ----
 
 #### Capturas anuales del stock (toneladas)
@@ -24,7 +33,7 @@ CATCH.DAT <- read.table(paste(dir,"CATCH.DAT",sep="/"),
 # Datos de captura comercial ----
 #===============================================================================
 # Arreglo de Datos
-year<-2002:2021
+year<-2003:2021
 nyear<-length(year)
 
 catch_year<-c(-999,year)
@@ -34,7 +43,7 @@ catch_catch<-c(0,CATCH.DAT$X5)
 catch_catch_se<-rep(0.01,nyear+1) # se asume cv = 0.01 Revisar!!!!
 #---------------------------------------------------------------------------------
 # crear data.frame 
-catch1<-data.frame(year=catch_year,
+catch1<-data.frame(Yr=catch_year,
                    seas=catch_seas,
                    fleet=catch_fleet,
                    catch=catch_catch,
@@ -53,7 +62,7 @@ SurveyIndex <- TUNEFF.DAT[,2:7] %>%
 # Paso 3: formato SS3 para el índice de abundancia survey
 # Índice de abundancia del survey para formato SS3 ----
 
-yearf1<-2002:2021
+yearf1<-2003:2021
 nyearf1<-length(yearf1)
 
 CPUE_year<-c(yearf1)
@@ -63,7 +72,7 @@ CPUE_obs   <-c(SurveyIndex$total) # migra desde a4a
 CPUE_se_log<-c(rep(0.3,nyearf1)) 
 
 # Genera data.frame
-CPUE1<-data.frame(year   = CPUE_year, #  años
+CPUE1<-data.frame(Yr   = CPUE_year, #  años
                   seas   = CPUE_seas, # temporada/mes
                   index  = CPUE_index, # número de cada flota 
                   obs    = CPUE_obs,    # valor observado
@@ -74,7 +83,7 @@ CPUE1<-data.frame(year   = CPUE_year, #  años
 AgeComp_survey<-TUNEFF.DAT[,2:7]
 AgeComp_survey[is.na(AgeComp_survey)] <- 0
 # Paso 5: formato SS3 para la composición de edad del survey
-yearf2<-2002:2021
+yearf2<-2003:2021
 nyearf2<-length(yearf2)
 
 new_agecomp_survey<-data.frame(Yr=yearf2, 
@@ -101,7 +110,7 @@ CATNUM.DAT <- read.table(paste(dir,"CATNUM.DAT",sep="/"),
 CATNUM.DAT[is.na(CATNUM.DAT)] <- 0
 
 
-yearf3<-2002:2021
+yearf3<-2003:2021
 nyearf3<-length(yearf3)
 
 new_agecomp_catch<-data.frame(Yr=yearf3, 
@@ -139,7 +148,7 @@ PROPMAT.DAT <- read.table(paste(dir,"PROPMAT.DAT",sep="/"),
                           sep="",na="NA",fill=T,skip = 5)
 
 # Datos de madurez , pesos medios a la edad 
-years4<-2002:2021
+years4<-2003:2021
 nyears4<-length(years4)
 
 maturity1<-as.numeric(PROPMAT.DAT[1,])
@@ -173,7 +182,7 @@ wtatege_f1<-cbind(wtatege_f1,rbind(wt_flt,fecundity,popwt))
 wtat1<-wtatege_f1[order(wtatege_f1$Yr),]
 
 # Composiciones de tallas
-tallasexcell<-here("Archivos_datos","Merluzas_a4a","Indice_abundancia_tallas_medits_GSA1_hake.xlsx")
+
 
 comptallas<-read_excel(tallasexcell, sheet = "catch",
                        col_names= TRUE,col_types=NULL,na="",skip= 0)
@@ -204,10 +213,10 @@ new_lencomp1<-cbind(new_lencomp, dat_rows)
 Indtallas0<-read_excel(tallasexcell, sheet = "indices",
                       col_names= TRUE,col_types=NULL,na="",skip= 1)
 
-yearcatch2<-seq(2002,2021,1)
+yearcatch2<-seq(2003,2021,1)
 nyearcatch2<-length(yearcatch2)
 tallas2<-seq(5,65,1)
-Indtallas<-Indtallas0[2:62,9:28]
+Indtallas<-Indtallas0[2:62,10:28]
 
 IndicesTallas<-data.frame(row.names = NULL,year=yearcatch2,t(Indtallas))
 
@@ -237,13 +246,7 @@ MG_parms1<-data.frame("LO"           = 0.05,
                       "PR_SD"        = 0.1,
                       "PR_type"      = 0,
                       "PHASE"        = -4,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 row.names(MG_parms1)<-"NatM"
 ##--------------------------------------------------------------
 MG_parms2<-data.frame("LO"           = 2,
@@ -253,13 +256,7 @@ MG_parms2<-data.frame("LO"           = 2,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -5,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 row.names(MG_parms2)<-"L_at_Amin" 
 ##--------------------------------------------------------------
 MG_parms3<-data.frame("LO"           = 45,
@@ -269,13 +266,7 @@ MG_parms3<-data.frame("LO"           = 45,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -3,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 row.names(MG_parms3)<-"L_at_Amax"
 ##--------------------------------------------------------------
 MG_parms4<-data.frame("LO"           = 0.2,
@@ -285,13 +276,7 @@ MG_parms4<-data.frame("LO"           = 0.2,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -3,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 row.names(MG_parms4)<-"VonBert_K"
 ##--------------------------------------------------------------
 MG_parms5<-data.frame("LO"           = 0.03,
@@ -301,13 +286,7 @@ MG_parms5<-data.frame("LO"           = 0.03,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -5,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link"=0,"dev_link"=0,"dev_minyr"=0,"dev_maxyr"=0,"dev_PH"=0,"Block"=0,"Block_Fxn"=0)
 row.names(MG_parms5)<-"CV_young"
 ##--------------------------------------------------------------
 MG_parms6<-data.frame("LO"           = 0.03,
@@ -317,13 +296,7 @@ MG_parms6<-data.frame("LO"           = 0.03,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -5,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link"=0,"dev_link"=0,"dev_minyr"=0,"dev_maxyr"=0,"dev_PH"=0,"Block"=0,"Block_Fxn"=0)
 row.names(MG_parms6)<-"CV_old"
 ##--------------------------------------------------------------
 MG_parms7<-data.frame("LO"           = -3,
@@ -333,13 +306,7 @@ MG_parms7<-data.frame("LO"           = -3,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -50,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link"=0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 row.names(MG_parms7)<-"Wtlen_1"
 ##--------------------------------------------------------------
 MG_parms8<-data.frame("LO"           = -3,
@@ -349,13 +316,7 @@ MG_parms8<-data.frame("LO"           = -3,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -50,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link"=0,"dev_link"=0,"dev_minyr"=0,"dev_maxyr"=0,"dev_PH"=0,"Block"=0,"Block_Fxn"=0)
 row.names(MG_parms8)<-"Wtlen_2"
 ##--------------------------------------------------------------
 MG_parms9<-data.frame("LO"           = -3,
@@ -365,13 +326,7 @@ MG_parms9<-data.frame("LO"           = -3,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -50,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"=0,"dev_minyr"=0,"dev_maxyr"=0,"dev_PH"=0,"Block"=0,"Block_Fxn"= 0)
 row.names(MG_parms9)<-"Mat50%"
 ##--------------------------------------------------------------
 MG_parms10<-data.frame("LO"           = -3,
@@ -381,20 +336,18 @@ MG_parms10<-data.frame("LO"           = -3,
                        "PR_SD"        = 99,
                        "PR_type"      = 0,
                        "PHASE"        = -50,
-                       "env_var&link" = 0,
-                       "dev_link"     = 0,
-                       "dev_minyr"    = 0,
-                       "dev_maxyr"    = 0,
-                       "dev_PH"       = 0,
-                       "Block"        = 0,
-                       "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 row.names(MG_parms10)<-"Mat_slope"
 
 #----------------------------------------------------------------------
-MG_parms<-rbind(MG_parms1,MG_parms2,MG_parms3,MG_parms4,MG_parms5,
+MG_parms0<-data.frame("LO"="biological Parameters ","HI"=" ","INIT"=" ","PRIOR"=" ","PR_SD"=" ","PR_type"=" ",
+                      "PHASE"=" ","env_var&link"=" ","dev_link"= " ","dev_minyr"=" ",
+                      "dev_maxyr"=" ","dev_PH"=" ","Block"=" ","Block_Fxn"=" ");row.names(MG_parms0)<-""
+MG_parms<-rbind(MG_parms0,MG_parms1,MG_parms2,MG_parms3,MG_parms4,MG_parms5,
                 MG_parms6,MG_parms7,MG_parms8,MG_parms9,MG_parms10)
 namesBioPar<-row.names(MG_parms)
 MG_parms$type<-namesBioPar
+
 #----------------------------------------------------------------------
 
 ####################################################
@@ -408,13 +361,7 @@ SR_parms1<-data.frame("LO"           = 5,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = 1,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+                      "env_var&link"=0,"dev_link"=0,"dev_minyr"=0,"dev_maxyr"=0,"dev_PH"=0,"Block"=0,"Block_Fxn"=0)
 rownames(SR_parms1)<-"SR_LN(R0)"
 ##--------------------------------------------------------------
 SR_parms2<-data.frame("LO"           = 0.2,
@@ -424,13 +371,7 @@ SR_parms2<-data.frame("LO"           = 0.2,
                       "PR_SD"        = 0.113,
                       "PR_type"      = 2,
                       "PHASE"        = -4,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+                      "env_var&link" = 0,"dev_link"=0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(SR_parms2)<-"SR_SCAA_null"
 ##--------------------------------------------------------------
 SR_parms3<-data.frame("LO"           = 0.3,
@@ -440,13 +381,7 @@ SR_parms3<-data.frame("LO"           = 0.3,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -6,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+                      "env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(SR_parms3)<-"SR_sigmaR"
 ##--------------------------------------------------------------
 SR_parms4<-data.frame("LO"           = -5,
@@ -456,13 +391,7 @@ SR_parms4<-data.frame("LO"           = -5,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -50,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+                      "env_var&link"=0,"dev_link"=0,"dev_minyr"=0,"dev_maxyr"=0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(SR_parms4)<-"SR_regime"
 ##--------------------------------------------------------------
 SR_parms5<-data.frame("LO"           = 0,
@@ -472,17 +401,14 @@ SR_parms5<-data.frame("LO"           = 0,
                       "PR_SD"        = 99,
                       "PR_type"      = 0,
                       "PHASE"        = -50,
-                      "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+                      "env_var&link"=0,"dev_link"=0,"dev_minyr"=0,"dev_maxyr"=0,"dev_PH"=0,"Block"=0,"Block_Fxn"=0)
 rownames(SR_parms5)<-"SR_autocorr"
 
 ####################################################
-SR_parms<-rbind(SR_parms1,SR_parms2,SR_parms3,SR_parms4,SR_parms5)
+SR_parms0<-data.frame("LO"="Stock-recruitment relationship ","HI"=" ","INIT"=" ","PRIOR"=" ","PR_SD"=" ","PR_type"=" ",
+                      "PHASE"=" ","env_var&link"=" ","dev_link"= " ","dev_minyr"=" ",
+                      "dev_maxyr"=" ","dev_PH"=" ","Block"=" ","Block_Fxn"=" ");row.names(SR_parms0)<-""
+SR_parms<-rbind(SR_parms0,SR_parms1,SR_parms2,SR_parms3,SR_parms4,SR_parms5)
 namesSRPar<-row.names(SR_parms)
 SR_parms$type<-namesSRPar
 
@@ -498,15 +424,13 @@ Q_parms1<-data.frame( "LO"           = -7,
                       "PR_type"      = 0,
                       "PHASE"        = 1,
                       "env_var&link" = 0,
-                      "dev_link"     = 0,
-                      "dev_minyr"    = 0,
-                      "dev_maxyr"    = 0,
-                      "dev_PH"       = 0,
-                      "Block"        = 0,
-                      "Block_Fxn"    = 0)
+                      "dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(Q_parms1)<-"LnQ_base_SURVEY1"
 #--------------------------------------------------
-Q_parms<-rbind(Q_parms1)
+Q_parms0<-data.frame("LO"="Catchability ","HI"=" ","INIT"=" ","PRIOR"=" ","PR_SD"=" ","PR_type"=" ",
+                      "PHASE"=" ","env_var&link"=" ","dev_link"= " ","dev_minyr"=" ",
+                      "dev_maxyr"=" ","dev_PH"=" ","Block"=" ","Block_Fxn"=" ");row.names(Q_parms0)<-""
+Q_parms<-rbind(Q_parms0,Q_parms1)
 namesQPar<-row.names(Q_parms)
 Q_parms$type<-namesQPar
 
@@ -522,13 +446,7 @@ size_selex_parms1<-data.frame(
   "PR_SD"        = 0,#este valor es ignorado si PR_type=0
   "PR_type"      = 0, #0=no se usa (none)
   "PHASE"        = 2,#se estima
-  "env_var&link" = 0,
-  "dev_link"     = 0,
-  "dev_minyr"    = 0,
-  "dev_maxyr"    = 0,
-  "dev_PH"       = 0,
-  "Block"        = 0,
-  "Block_Fxn"    = 0)
+  "env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(size_selex_parms1)<-"SizeSel_P_1_Flota(1)"
 
 size_selex_parms2<-data.frame(
@@ -539,13 +457,7 @@ size_selex_parms2<-data.frame(
   "PR_SD"        = 0,#este valor es ignorado si PR_type=0
   "PR_type"      = 0, #0=no se usa (none)
   "PHASE"        = 2,#se estima
-  "env_var&link" = 0,
-  "dev_link"     = 0,
-  "dev_minyr"    = 0,
-  "dev_maxyr"    = 0,
-  "dev_PH"       = 0,
-  "Block"        = 0,
-  "Block_Fxn"    = 0)
+  "env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(size_selex_parms2)<-"SizeSel_P_2_Flota(1)"
 
 size_selex_parms3<-data.frame(
@@ -556,13 +468,7 @@ size_selex_parms3<-data.frame(
   "PR_SD"        = 0,#este valor es ignorado si PR_type=0
   "PR_type"      = 0, #0=no se usa (none)
   "PHASE"        = 3,#se estima
-  "env_var&link" = 0,
-  "dev_link"     = 0,
-  "dev_minyr"    = 0,
-  "dev_maxyr"    = 0,
-  "dev_PH"       = 0,
-  "Block"        = 0,
-  "Block_Fxn"    = 0)
+  "env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(size_selex_parms3)<-"SizeSel_P_1_SURVEY1(2)"
 
 size_selex_parms4<-data.frame(
@@ -573,16 +479,13 @@ size_selex_parms4<-data.frame(
   "PR_SD"        = 0,#este valor es ignorado si PR_type=0
   "PR_type"      = 0, #0=no se usa (none)
   "PHASE"        = 3,#se estima
-  "env_var&link" = 0,
-  "dev_link"     = 0,
-  "dev_minyr"    = 0,
-  "dev_maxyr"    = 0,
-  "dev_PH"       = 0,
-  "Block"        = 0,
-  "Block_Fxn"    = 0)
+  "env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(size_selex_parms4)<-"SizeSel_P_2_SURVEY1(2)"
 #----------------------------------------------------------------------
-size_selex_parms<-rbind(size_selex_parms1,size_selex_parms2,size_selex_parms3,size_selex_parms4)
+size_selex_parms0<-data.frame("LO"="Size selectivity ","HI"=" ","INIT"=" ","PRIOR"=" ","PR_SD"=" ","PR_type"=" ",
+                     "PHASE"=" ","env_var&link"=" ","dev_link"= " ","dev_minyr"=" ",
+                     "dev_maxyr"=" ","dev_PH"=" ","Block"=" ","Block_Fxn"=" ");row.names(size_selex_parms0)<-""
+size_selex_parms<-rbind(size_selex_parms0,size_selex_parms1,size_selex_parms2,size_selex_parms3,size_selex_parms4)
 namesSelfPar<-row.names(size_selex_parms)
 size_selex_parms$type<-namesSelfPar
 
@@ -596,13 +499,7 @@ age_selex_parms1<-data.frame("LO"            = 0,
                              "PR_SD"         = 99,
                              "PR_type"       = 0,
                              "PHASE"         = -99,
-                             "env_var&link"  = 0,
-                             "dev_link"      = 0,
-                             "dev_minyr"     = 0,
-                             "dev_maxyr"     = 0,
-                             "dev_PH"        = 0,
-                             "Block"         = 0,
-                             "Block_Fxn"     = 0)
+"env_var&link"  = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(age_selex_parms1)<-"AgeSel_P_1_FISHERY(1)"
 #--------------------------------------------------
 age_selex_parms2<-data.frame("LO"           = 0,
@@ -612,13 +509,7 @@ age_selex_parms2<-data.frame("LO"           = 0,
                              "PR_SD"        = 99,
                              "PR_type"      = 0,
                              "PHASE"        = -99,
-                             "env_var&link" = 0,
-                             "dev_link"     = 0,
-                             "dev_minyr"    = 0,
-                             "dev_maxyr"    = 0,
-                             "dev_PH"       = 0,
-                             "Block"        = 0,
-                             "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(age_selex_parms2)<-"AgeSel_P_2_FISHERY(1)"
 #--------------------------------------------------
 age_selex_parms3<-data.frame(row.names="AgeSel_P_1_SURVEY1(2)",
@@ -629,13 +520,7 @@ age_selex_parms3<-data.frame(row.names="AgeSel_P_1_SURVEY1(2)",
                              "PR_SD"        = 99,
                              "PR_type"      = 0,
                              "PHASE"        = -99,
-                             "env_var&link" = 0,
-                             "dev_link"     = 0,
-                             "dev_minyr"    = 0,
-                             "dev_maxyr"    = 0,
-                             "dev_PH"       = 0,
-                             "Block"        = 0,
-                             "Block_Fxn"    = 0)
+"env_var&link"= 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0, "Block"= 0,"Block_Fxn"= 0)
 rownames(age_selex_parms3)<-"AgeSel_P_1_SURVEY1(2)"
 #--------------------------------------------------
 age_selex_parms4<-data.frame(row.names="AgeSel_P_2_SURVEY1(2)",
@@ -646,16 +531,13 @@ age_selex_parms4<-data.frame(row.names="AgeSel_P_2_SURVEY1(2)",
                              "PR_SD"        = 99,
                              "PR_type"      = 0,
                              "PHASE"        = -99,
-                             "env_var&link" = 0,
-                             "dev_link"     = 0,
-                             "dev_minyr"    = 0,
-                             "dev_maxyr"    = 0,
-                             "dev_PH"       = 0,
-                             "Block"        = 0,
-                             "Block_Fxn"    = 0)
+"env_var&link" = 0,"dev_link"= 0,"dev_minyr"= 0,"dev_maxyr"= 0,"dev_PH"= 0,"Block"= 0,"Block_Fxn"= 0)
 rownames(age_selex_parms4)<-"AgeSel_P_2_SURVEY1(2)"
 #----------------------------------------------------------------------
-age_selex_parms<-rbind(age_selex_parms1,age_selex_parms2,age_selex_parms3,age_selex_parms4)
+age_selex_parms0<-data.frame("LO"="Age selectivity ","HI"=" ","INIT"=" ","PRIOR"=" ","PR_SD"=" ","PR_type"=" ",
+                              "PHASE"=" ","env_var&link"=" ","dev_link"= " ","dev_minyr"=" ",
+                              "dev_maxyr"=" ","dev_PH"=" ","Block"=" ","Block_Fxn"=" ");row.names(age_selex_parms0)<-""
+age_selex_parms<-rbind(age_selex_parms0,age_selex_parms1,age_selex_parms2,age_selex_parms3,age_selex_parms4)
 namesSelaPar<-row.names(age_selex_parms)
 age_selex_parms$type<-namesSelaPar
 
@@ -687,14 +569,13 @@ writeData(wb, sheet = "Parameters", x = Parametros)
 #≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
 # Guardar el archivo Excel
 #≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
-saveWorkbook(wb, paste(here("Archivos_datos",'Excell_SS3'),"datos_GSA6_SS3.xlsx",sep="/"),
-             overwrite = TRUE)
+saveWorkbook(wb, dir.excell,overwrite = TRUE)
 
 
 #≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
 # Gerena Rdata ----
 #≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
-save(list=ls(all=T),
-     file=paste(here("Archivos_datos",'Merluzas_a4a'),
-                     "/Rdata_a4a.RData",sep=""))
+# save(list=ls(all=T),
+#      file=paste(here("Archivos_datos",'Merluzas_a4a'),
+#                      "/Rdata_a4a.RData",sep=""))
 #≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠≠
