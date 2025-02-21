@@ -1,0 +1,19 @@
+$par
+[1] 1990.0286233 2011.2849612 2022.5224581 2022.6241522    0.8073241
+
+$objective
+[1] 0.02075992
+
+$convergence
+[1] 0
+
+$iterations
+[1] 32
+
+$evaluations
+function gradient 
+      41      171 
+
+$message
+[1] "X-convergence (3)"
+

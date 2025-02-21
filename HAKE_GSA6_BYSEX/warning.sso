@@ -1,0 +1,12 @@
+Warning 1 : Fleet:_1min bound on parameter for size at peak is 4; should be >= midsize bin 2 (5.5)
+Warning 2 : Fleet:_1max bound on parameter for size at peak is 79; should be <= midsize bin N-1 (78.5)
+Warning 3 : Fleet:_2min bound on parameter for size at peak is 4; should be >= midsize bin 2 (5.5)
+Warning 4 : Fleet:_2max bound on parameter for size at peak is 84; should be <= midsize bin N-1 (78.5)
+Warning 5 : Setting in starter does not request all priors, and 3 parameters have priors and are not estimated, so their prior not included in obj_fun.
+Warning 6 : Minimum pop size bin:_4; is > L at Amin for sex: 1; Gpat: 1; L= 0
+Warning 7 : Maximum pop size bin:_79; is within 5% of L at maxage for sex: 1; Gpat: 1 settle: 1; L= 106.594
+Warning 8 : Minimum pop size bin:_4; is > L at Amin for sex: 2; Gpat: 1; L= 3.75374
+Warning 9 : Maximum pop size bin:_79; is within 5% of L at maxage for sex: 2; Gpat: 1 settle: 1; L= 91.6204
+Note 1 Information: A revised protocol for the Fcast_yr specification is available and recommended.
+Note 2 Information:  N parameters that are on or within 1% of min-max bound: 1; check results, variance may be suspect
+ 9 warnings  and 2 notes 
