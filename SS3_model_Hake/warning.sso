@@ -1,0 +1,4 @@
+1 Minimum pop size bin:_10; is > L at Amin for sex: 1; Gpat: 1; L= 5
+2 1st iteration warning: catch logL > 50% total logL; check configuration; suggest start with larger R0
+3 Final gradient: 0.000130843 is larger than final_conv: 0.0001
+N warnings: 3

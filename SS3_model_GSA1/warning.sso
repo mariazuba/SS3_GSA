@@ -1,0 +1,6 @@
+1  adjusting recdev_early to: 1997
+2 fleet: 2  SS3 changed Q to not estimate because it is set to float
+3 Minimum pop size bin:_10; is > L at Amin for sex: 1; Gpat: 1; L= 5
+4  Main recdev biasadj is >2 times ratio of rmse to sigmaR
+5 Final gradient: 1.95746e+06 is larger than final_conv: 0.0001
+N warnings: 5

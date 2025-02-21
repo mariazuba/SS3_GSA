@@ -1,0 +1,6 @@
+1  adjusting recdev_early to: 1996
+2 fleet: 2  SS3 changed Q to not estimate because it is set to float
+3 Minimum pop size bin:_10; is > L at Amin for sex: 1; Gpat: 1; L= 5
+4 Final gradient: 4.20167e+06 is larger than final_conv: 0.0001
+ N parameters are on or within 1% of min-max bound: 2; check results, variance may be suspect
+N warnings: 4
